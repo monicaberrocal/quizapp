@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container w-75">
+
+    <div class="d-flex align-items-center">
+        <h1 style="margin-right: 10px;">{{ asignatura.nombre }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+                <div class="my-own-form">
+                    {{ form_asignatura.nombre }}
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg i-white"></i></button>
+            </div>
+        </form>
+    </div>
+
+    {% for tema in asignatura.temas.all %}
+        <div class="d-flex w-100 justify-content-between align-items-center">
+            <a href="{% url 'vista_tema' tema.id %}" class="btn btn-primary mb-2">{{ tema.nombre }}</a>
+            <form action="{% url 'eliminar_tema_asignatura' tema.id asignatura.id %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar el tema {{ tema.nombre|escapejs }} de la asignatura {{ asignatura.nombre|escapejs}}?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary">Eliminar</button>
+            </form>
+        </div>
+    {% empty %}
+        <li class="list-group-item">No hay temas creados para esta asignatura.</li>
+    {% endfor %}
+
+    <div class="card card-custom">
+        <div class="card-body">
+            <h2>Crear Tema</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form_tema|crispy }}
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

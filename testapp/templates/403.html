@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+        <div class="col-12 text-center mt-3">
+            <img class="img-fluid mb-4" src="{% static 'quiz/img/logo_completo.png' %}" alt="Logo">
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 text-center mt-3">
+            <h1 class="mb-4">Ups...Parece que el contenido al que intentas acceder no existe.</h1>
+        </div>
+    </div>
+
+    
+
+    <div class="d-flex justify-content-center mt-3">
+        <a class="btn btn-primary mx-2" href="/"><h2>Volver a inicio</h2></a>
+    </div>
+    
+</div>
+{% endblock %}

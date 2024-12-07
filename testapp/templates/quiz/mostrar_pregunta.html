@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Pregunta {{ pregunta_actual_index }} de {{ total_preguntas }}</h1>
+<h2 class="mt-5">{{ pregunta.texto }}</h2>
+
+<form class="mt-5" method="post" action="{% url 'procesar_respuesta' %}">
+    {% csrf_token %}
+    <div class="row">
+        {% for respuesta in respuestas %}
+            <div class="col-md-6 mb-3">
+                <div class="">
+                    <input type="radio" id="respuesta_{{ respuesta.id }}" name="respuesta" value="{{ respuesta.id }}" class="form-check-input-custom d-none" onchange="updateSelection(this);">
+                    <label for="respuesta_{{ respuesta.id }}" class="form-check-label-custom respuesta-rectangulo">{{ respuesta.texto }}</label>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4"> 
+        <button type="submit" class="btn btn-primary btn-lg" id="continuarBtn" disabled>Continuar</button>
+    </div>
+</form>
+
+<script>
+    function updateSelection(selected) {
+        const labels = document.querySelectorAll('.respuesta-rectangulo');
+        labels.forEach(label => {
+            label.style.backgroundColor = '';
+            label.style.color = '';
+        });
+        const label = selected.nextElementSibling;
+        label.style.backgroundColor = 'var(--naranja-quemado)';
+        label.style.color = 'white';
+        document.getElementById('continuarBtn').disabled = false;
+    }
+</script>
+
+{% endblock %}

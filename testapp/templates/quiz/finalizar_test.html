@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Resultados del Test</h2>
+
+    <div class="card text-center">
+        <div class="card-body">
+            <h5 class="card-title">Resumen de Resultados</h5>
+            <p class="card-text">Has respondido a <strong>{{ total_respondidas }}</strong> pregunta{% if total_respondidas != 1 %}s{% endif %}.</p>
+            <p class="card-text">Has acertado <strong>{{ respuestas_correctas }}</strong> pregunta{% if respuestas_correctas != 1 %}s{% endif %}.</p>
+            <p class="card-text">Has fallado <strong>{{ fallos }}</strong> pregunta{% if fallos != 1 %}s{% endif %}.</p>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="/" class="btn btn-primary btn-lg">Volver al inicio</a>
+    </div>
+</div>
+
+{% endblock %}

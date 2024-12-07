@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container w-75">
+
+    <div class="d-flex align-items-center">
+        <h1 style="margin-right: 10px;">{{ tema.nombre }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+                <div class="my-own-form">
+                    {{ form_tema.nombre }}
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg i-white"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_preguntas" aria-expanded="false" aria-controls="collapse_preguntas">
+        Ver las preguntas
+    </button>
+    <div class="collapse" id="collapse_preguntas">
+        <ul class="list-group">
+            {% for pregunta in tema.preguntas.all %}
+                <li class="list-group-item">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{pregunta.id}}" aria-expanded="false" aria-controls="#collapse{{pregunta.id}}">
+                        {{ pregunta.texto }}
+                    </button>
+                    <ul class="list-group mt-2 collapse" id="collapse{{pregunta.id}}">
+                        {% for respuesta in pregunta.respuestas.all %}
+                        <li class="list-group-item 
+                            {% if respuesta.id == pregunta.respuesta_correcta.id %}
+                            respuesta-correcta
+                            {% endif %}
+                        ">
+                            {{ respuesta.texto }}</li>
+                        {% empty %}
+                            <li class="list-group-item">No hay respuestas para esta pregunta.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No hay preguntas creadas para este tema.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <div class="card card-custom mb-5">
+        <div class="card-body">
+
+            <h2>Crear Pregunta</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form_pregunta.texto_pregunta|as_crispy_field }}
+
+                <h3>Respuestas</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_pregunta.respuesta1|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_pregunta.respuesta2|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_pregunta.respuesta3|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_pregunta.respuesta4|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form_pregunta.respuesta_correcta|as_crispy_field }}
+                </div>
+
+                {{ form_pregunta.ayuda|as_crispy_field }}
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

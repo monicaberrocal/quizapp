@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container custom-container-2">
+
+    <div class="card card-custom">
+        <div class="card-body">
+
+            <h2>Crear Pregunta Rápida</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.tema|as_crispy_field }}
+                {{ form.texto_pregunta|as_crispy_field }}
+
+                <h3>Respuestas</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta1|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta2|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta3|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta4|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form.respuesta_correcta|as_crispy_field }}
+                </div>
+
+                {{ form.ayuda|as_crispy_field }}
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+
+        </div>
+    </div>
+    
+</div>
+
+{% endblock %}

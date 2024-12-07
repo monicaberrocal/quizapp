@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container w-75">
+
+    <div class="d-flex align-items-center">
+        <h1 style="margin-right: 10px;">{{ pregunta.texto }}</h1>
+    </div>
+
+    {% for respuesta in pregunta.respuestas.all %}
+        <div class="d-flex w-100 justify-content-between align-items-center">
+            {{ respuesta.texto }}
+        </div>
+    {% empty %}
+        <li class="list-group-item">No hay temas creados para esta asignatura.</li>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

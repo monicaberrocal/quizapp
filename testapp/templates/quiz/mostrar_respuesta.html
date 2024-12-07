@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="text-center mt-4">
+    <h3><strong>Pregunta:</strong> {{ pregunta.texto }}</h3>
+
+    {% if correcto %}
+        <h4 class="text-success mt-4"><strong>¡Bien hecho!</strong> Has respondido correctamente.</h4>
+    {% else %}
+        <h4 class="text-danger mt-4">La respuesta correcta era: <strong>{{ pregunta.respuesta_correcta.texto }}</strong></h4>
+
+        <div class="row mt-4">
+            {% for respuesta in pregunta.respuestas.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card {% if respuesta.id == pregunta.respuesta_correcta.id %}border-success{% elif respuesta.id == respuesta_seleccionada.id %}border-danger{% else %}border-secondary{% endif %}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ respuesta.texto }}</h5>
+                            {% if respuesta.id == pregunta.respuesta_correcta.id %}
+                                <p class="text-success"><strong>¡Correcta!</strong></p>
+                            {% elif respuesta.id == respuesta_seleccionada.id %}
+                                <p class="text-danger"><strong>Incorrecta</strong></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    {% endif %}
+</div>
+
+{% if pregunta.ayuda %}
+<div class="text-center mt-4">
+    <h4>{{pregunta.ayuda}}</h4>
+</div>
+{% endif %}
+
+<div class="text-center mt-4">
+    <a href="{% url 'mostrar_pregunta' %}" class="btn btn-primary btn-lg">Continuar</a>
+    <a href="{% url 'finalizar_test' %}" class="btn btn-outline-primary btn-lg">Finalizar</a>
+</div>
+
+
+
+{% endblock %}

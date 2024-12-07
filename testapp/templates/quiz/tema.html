@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container custom-container-2">
+
+    <div class="text-center mb-4">
+        <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_formulario" aria-expanded="false" aria-controls="collapse_formulario">
+            Importar preguntas al tema: {{tema.nombre}}
+        </button>
+        <div class="collapse" id="collapse_formulario">
+            <div class="card p-3 mt-2" style="max-width: 400px; margin: auto;">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="fileInput" class="form-label">Selecciona un archivo JSON:</label>
+                        <input type="file" id="fileInput" name="file" class="form-control" accept=".json">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center">
+            <h1 style="margin-right: 10px;">{{ tema.nombre }}</h1>
+            <a href="{% url 'editar_tema' tema.id %}">
+                <i class="bi bi-pencil-square i-orange" style="font-size: 24px;""></i>
+            </a>
+        </div>
+        <a href="{% url 'vista_asignatura' tema.asignatura.id %}" class="btn btn-outline-primary ms-auto">{{tema.asignatura.nombre}}</a>
+    </div>
+
+    <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_preguntas" aria-expanded="false" aria-controls="collapse_preguntas">
+        Ver las preguntas
+    </button>
+
+    <div class="collapse" id="collapse_preguntas">
+        <ul class="list-group">
+            {% for pregunta in tema.preguntas.all %}
+                <li class="list-group-item">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_respuestas_{{pregunta.id}}" aria-expanded="false" aria-controls="#collapse_respuestas_{{pregunta.id}}">
+                        {{ pregunta.texto }}
+                    </button>
+                    <form action="{% url 'eliminar_pregunta' pregunta.id tema.id %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar la pregunta {{ pregunta.texto|escapejs }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn"><i class="bi bi-trash-fill i-orange"></i></button>
+                    </form>
+                    <ul class="list-group mt-2 collapse" id="collapse_respuestas_{{pregunta.id}}">
+                        {% for respuesta in pregunta.respuestas.all %}
+                        <li class="list-group-item 
+                            {% if respuesta.id == pregunta.respuesta_correcta.id %}
+                            respuesta-correcta
+                            {% endif %}
+                        ">
+                        {% if respuesta.id == pregunta.respuesta_correcta.id %}<i class="bi bi-arrow-right-circle-fill"></i>&nbsp;&nbsp;{% endif %}{{ respuesta.texto }}
+                        </li>
+                        {% empty %}
+                            <li class="list-group-item">No hay respuestas para esta pregunta.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No hay preguntas creadas para este tema.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if tema.preguntas.exists %}
+        <div class="text-center mb-4 mt-4">
+            <div class="d-flex justify-content-center align-items-start">
+                <div class="me-2">
+                    <a href="{% url 'estudiar_tema' tema.id %}" class="btn btn-primary btn-lg">Estudiar {{tema.nombre}}</a>
+                </div>
+                {% if preguntas_con_fallos > 0 %}
+                    <div>
+                        <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-primary btn-lg">Repasar {{tema.nombre}}</a>
+                    </div>
+                {% endif %}
+            </div>
+            {% if preguntas_con_fallos > 0 %}
+            <div class="mt-2">
+                <span class="badge bg-warning text-dark">
+                    {{ preguntas_con_fallos }} pregunta{% if preguntas_con_fallos != 1 %}s{% endif %} con fallos
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="card card-custom mb-5">
+        <div class="card-body">
+
+            <h2>Crear Pregunta</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.texto_pregunta|as_crispy_field }}
+
+                <h3>Respuestas</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta1|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta2|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta3|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.respuesta4|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form.respuesta_correcta|as_crispy_field }}
+                </div>
+
+                {{ form.ayuda|as_crispy_field }}
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
