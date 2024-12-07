@@ -68,6 +68,10 @@ h3, label {
     background-color: var(--naranja-quemado-oscuro);
     border-color: var(--rosa-claro);
 }
+.btn-primary:disabled {
+    background-color: var(--rosa-claro);
+    border-color: var(--rosa-claro);
+}
 
 .btn-outline-primary, .btn-outline-primary:active {
     color: var(--naranja-quemado);
@@ -114,3 +118,45 @@ h3, label {
     box-shadow: none; /* Sin sombra por defecto */
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Transiciones suaves */
 }
+
+.respuesta-rectangulo {
+    display: block;
+    padding: 15px;
+    border: 2px solid var(--naranja-quemado); /* Color del borde */
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.respuesta-rectangulo:hover {
+    background-color: var(--naranja-quemado); /* Color al pasar el mouse */
+}
+
+.form-check-input-custom:checked + .form-check-label-custom {
+    background-color:  --naranja-quemado; /* Color al seleccionar */
+    color: white; /* Color del texto al seleccionar */
+}
+
+.form-check-input:checked {
+    background-color: var(--naranja-quemado-oscuro);
+    border-color: var(--naranja-quemado-oscuro);
+}
+
+.custom-container {
+    width: 50%; /* Ancho del 50% por defecto */
+}
+
+.custom-container-2 {
+    width: 75%;
+}
+
+@media (max-width: 576px) {
+    .custom-container {
+        width: 100%;
+    }
+    .custom-container-2 {
+        width: 100%;
+    }
+}
+
