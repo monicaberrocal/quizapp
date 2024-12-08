@@ -44,12 +44,14 @@
                         <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
                             <a href="{% url 'vista_asignatura' asignatura.id %}" class="btn btn-primary w-100">{{ asignatura.nombre }}</a>
                         </div>
-                        <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
-                            <div class="d-flex justify-content-center justify-content-md-end"> <!-- Centrar en móviles -->
-                                <a href="{% url 'estudiar_asignatura' asignatura.id %}" class="btn btn-outline-primary me-2">Estudiar</a>
-                                <a href="{% url 'repasar_asignatura' asignatura.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                        {% if asignatura.tiene_preguntas %}
+                            <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
+                                <div class="d-flex justify-content-center justify-content-md-end"> <!-- Centrar en móviles -->
+                                    <a href="{% url 'estudiar_asignatura' asignatura.id %}" class="btn btn-outline-primary me-2">Estudiar</a>
+                                    <a href="{% url 'repasar_asignatura' asignatura.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
                         <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
                             <div class="d-flex justify-content-center justify-content-md-end"> <!-- Centrar en móviles -->
                                 <form action="{% url 'eliminar_asignatura' asignatura.id %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar la asignatura {{ asignatura.nombre|escapejs }}?');">

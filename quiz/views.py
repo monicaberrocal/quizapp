@@ -42,6 +42,9 @@ def crear_asignatura(request):
 
     asignaturas = Asignatura.objects.filter(usuario=request.user)
 
+    for asignatura in asignaturas:
+        asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
+
     return render(request, 'quiz/crear_asignatura.html', {
         'form': form,
         'form_file':form_file,
@@ -71,6 +74,8 @@ def vista_asignatura(request, id):
     else:
         form = TemaFormWithoutAsignatura(asignatura_id=id)
         form_file = ImportFileForm()
+
+    asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
 
     return render(request, 'quiz/asignatura.html', {
         'asignatura': asignatura,
@@ -379,6 +384,8 @@ def mostrar_pregunta(request):
 
     pregunta_id = preguntas_ids[pregunta_actual_index]
     pregunta = get_object_or_404(Pregunta, id=pregunta_id)
+    pregunta.respondida += 1
+    pregunta.save()
     respuestas = pregunta.respuestas.all().order_by('?')
 
     return render(request, 'quiz/mostrar_pregunta.html', {
@@ -403,7 +410,7 @@ def procesar_respuesta(request):
         respuesta_correcta_id = pregunta.respuesta_correcta.id
 
         request.session['total_respondidas'] += 1
-        pregunta.respondida += 1
+        
         if respuesta_seleccionada_id == str(respuesta_correcta_id):
             request.session['respuestas_correctas'] += 1
             request.session['respuesta_correcta'] = True
