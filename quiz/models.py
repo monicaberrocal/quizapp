@@ -20,6 +20,7 @@ class Pregunta(models.Model):
     texto = models.TextField()
     respuesta_correcta = models.ForeignKey('Respuesta', related_name='preguntas_correctas', on_delete=models.CASCADE, null=True)
     fallos = models.IntegerField(default=0)
+    respondida = models.IntegerField(default=0)
     ayuda = models.TextField(blank=True, null=True)
 
     def __str__(self):

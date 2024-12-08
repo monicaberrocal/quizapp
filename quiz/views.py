@@ -113,7 +113,7 @@ def editar_asignatura(request, id):
 @login_required
 def estudiar_asignatura(request, id):
     asignatura = get_object_or_404(Asignatura, id=id)
-    preguntas = list(Pregunta.objects.filter(tema__asignatura=asignatura).order_by('?'))
+    preguntas = list(Pregunta.objects.filter(tema__asignatura=asignatura).order_by('respondida', '?'))
     if not preguntas:
         return render(request, 'quiz/no_preguntas.html', {'asignatura': asignatura})
     
@@ -127,7 +127,7 @@ def estudiar_asignatura(request, id):
 @login_required
 def repasar_asignatura(request, id):
     asignatura = get_object_or_404(Asignatura, id=id)
-    preguntas = list(Pregunta.objects.filter(tema__asignatura=asignatura, fallos__gt=0).order_by('?'))
+    preguntas = list(Pregunta.objects.filter(tema__asignatura=asignatura, fallos__gt=0).order_by('respondida', '?'))
     if not preguntas:
         return render(request, 'quiz/no_preguntas.html', {'asignatura': asignatura})
     
@@ -290,7 +290,7 @@ def editar_tema(request, id):
 @login_required
 def estudiar_tema(request, id):
     tema = get_object_or_404(Tema, id=id)
-    preguntas = list(tema.preguntas.all().order_by('?'))
+    preguntas = list(tema.preguntas.all().order_by('respondida', '?'))
     if not preguntas:
         return render(request, 'quiz/no_preguntas.html', {'tema': tema})
     
@@ -304,7 +304,7 @@ def estudiar_tema(request, id):
 @login_required
 def repasar_tema(request, id):
     tema = get_object_or_404(Tema, id=id)
-    preguntas = list(tema.preguntas.filter(fallos__gt=0).order_by('?'))
+    preguntas = list(tema.preguntas.filter(fallos__gt=0).order_by('respondida', '?'))
     if not preguntas:
         return render(request, 'quiz/no_preguntas.html', {'tema': tema})
     
@@ -403,6 +403,7 @@ def procesar_respuesta(request):
         respuesta_correcta_id = pregunta.respuesta_correcta.id
 
         request.session['total_respondidas'] += 1
+        pregunta.respondida += 1
         if respuesta_seleccionada_id == str(respuesta_correcta_id):
             request.session['respuestas_correctas'] += 1
             request.session['respuesta_correcta'] = True
