@@ -22,15 +22,15 @@ class TemaForm(forms.ModelForm):
 class TemaFormWithoutAsignatura(forms.ModelForm):
     class Meta:
         model = Tema
-        fields = ['nombre']  # Solo incluir 'nombre' ya que 'asignatura' se definirá en la vista
+        fields = ['nombre']
 
     def __init__(self, *args, **kwargs):
         self.asignatura_id = kwargs.pop('asignatura_id', None)
         super(TemaFormWithoutAsignatura, self).__init__(*args, **kwargs)
 
     def save(self, commit=True):
-        tema = super(TemaFormWithoutAsignatura, self).save(commit=False)  # Usar el nombre correcto de la clase
-        tema.asignatura_id = self.asignatura_id  # Asignar el ID de la asignatura
+        tema = super(TemaFormWithoutAsignatura, self).save(commit=False)
+        tema.asignatura_id = self.asignatura_id
         if commit:
             tema.save()
         return tema
@@ -64,7 +64,6 @@ class PreguntaConRespuestasForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        # Asegurarse de que todas las respuestas son diferentes
         respuestas = [cleaned_data.get(f'respuesta{i}') for i in range(1, 5)]
         if len(set(respuestas)) != 4:
             raise forms.ValidationError("Todas las respuestas deben ser diferentes.")

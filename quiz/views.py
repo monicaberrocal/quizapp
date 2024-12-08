@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AsignaturaForm, ImportFileForm, PreguntaConRespuestasFormWithoutTema, TemaForm, PreguntaConRespuestasForm, RegistroUsuarioForm, TemaFormWithoutAsignatura
 from .models import Pregunta, Respuesta, Asignatura, Tema, Pregunta
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 import json
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -15,7 +15,7 @@ def registrar_usuario(request):
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('login')  # Redirige al login después del registro
+            return redirect('login')
     else:
         form = RegistroUsuarioForm()
     return render(request, 'quiz/registrar.html', {'form': form})
@@ -268,7 +268,7 @@ def editar_tema(request, id):
                     'tema': tema,
                     'form_pregunta': form_pregunta,
                     'form_tema': form_tema,
-                    'error_message': error_message  # Pasar mensaje de error
+                    'error_message': error_message
                 })
         else:
             form_tema = TemaFormWithoutAsignatura(request.POST, instance=tema, asignatura_id=tema.asignatura.id)
@@ -518,7 +518,12 @@ def exportar_asignaturas(request):
             "temas": temas_data
         })
 
-    return JsonResponse(data, safe=False)
+    json_data = json.dumps(data, ensure_ascii=False)
+
+    response = HttpResponse(json_data, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="asignaturas_exportadas.txt"'
+
+    return response
 
 @login_required
 def exportar_asignatura(request, id):
@@ -554,7 +559,12 @@ def exportar_asignatura(request, id):
         "temas": temas_data
     }
 
-    return JsonResponse(data, safe=False)
+    json_data = json.dumps(data, ensure_ascii=False)
+
+    response = HttpResponse(json_data, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="'+ asignatura.nombre + '_preguntas.txt' +'"'
+
+    return response
 
 @login_required
 def exportar_tema(request, id):
@@ -564,11 +574,9 @@ def exportar_tema(request, id):
     for pregunta in tema.preguntas.all():
         respuestas_data = []
         
-        # Primero, añadimos la respuesta correcta
         if pregunta.respuesta_correcta:
             respuestas_data.append({"texto": pregunta.respuesta_correcta.texto})
         
-        # Luego, añadimos las demás respuestas
         for respuesta in pregunta.respuestas.exclude(id=pregunta.respuesta_correcta.id):
             respuestas_data.append({"texto": respuesta.texto})
 
@@ -585,7 +593,13 @@ def exportar_tema(request, id):
         "preguntas": preguntas_data
     }
 
-    return JsonResponse(data, safe=False)
+    json_data = json.dumps(data, ensure_ascii=False)
+
+    response = HttpResponse(json_data, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="'+ tema.asignatura.nombre + '_' + tema.nombre + '_preguntas.txt' +'"'
+
+    return response
+
 
 @csrf_exempt
 def importar_asignaturas(file, user):
@@ -629,7 +643,6 @@ def importar_asignaturas(file, user):
         return JsonResponse({'status': 'error', 'message': 'Error al decodificar el JSON.'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
 
 @csrf_exempt
 def importar_asignatura(file, user, id):
