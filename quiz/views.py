@@ -512,13 +512,15 @@ def exportar_asignaturas(request):
                 for respuesta in pregunta.respuestas.exclude(id=pregunta.respuesta_correcta.id):
                     respuestas_data.append({"texto": respuesta.texto})
 
-                preguntas_data.append({
+                pregunta_data = {
                     "texto": pregunta.texto,
                     "respuestas": respuestas_data
-                })
+                }
 
                 if pregunta.ayuda:
-                    preguntas_data["ayuda"] = pregunta.ayuda
+                    pregunta_data["ayuda"] = pregunta.ayuda
+
+                preguntas_data.append(pregunta_data)
                 
             temas_data.append({
                 "nombre": tema.nombre,
@@ -553,13 +555,15 @@ def exportar_asignatura(request, id):
             for respuesta in pregunta.respuestas.exclude(id=pregunta.respuesta_correcta.id):
                 respuestas_data.append({"texto": respuesta.texto})
 
-            preguntas_data.append({
+            pregunta_data = {
                 "texto": pregunta.texto,
                 "respuestas": respuestas_data
-            })
+            }
 
             if pregunta.ayuda:
-                preguntas_data["ayuda"] = pregunta.ayuda
+                pregunta_data["ayuda"] = pregunta.ayuda
+
+            preguntas_data.append(pregunta_data)
         
         temas_data.append({
             "nombre": tema.nombre,
@@ -592,13 +596,15 @@ def exportar_tema(request, id):
         for respuesta in pregunta.respuestas.exclude(id=pregunta.respuesta_correcta.id):
             respuestas_data.append({"texto": respuesta.texto})
 
-        preguntas_data.append({
+        pregunta_data = {
             "texto": pregunta.texto,
             "respuestas": respuestas_data
-        })
+        }
 
         if pregunta.ayuda:
-            preguntas_data["ayuda"] = pregunta.ayuda
+            pregunta_data["ayuda"] = pregunta.ayuda
+
+        preguntas_data.append(pregunta_data)
 
     data = {
         "nombre": tema.nombre,

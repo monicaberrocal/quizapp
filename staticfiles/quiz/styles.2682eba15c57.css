@@ -1,0 +1,162 @@
+:root {
+    --blanco: #FFFFFF;
+    --naranja-quemado: #E05A47;
+    --naranja-quemado-oscuro: #91392e;
+    --rosa-claro: #F3AEC3;
+    --rosa-muy-claro: #f2d2dc;
+}
+
+body {
+    font-family: "Questrial", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.container404 {
+    text-align: center;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.body404 {
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+h1, h2 {
+    font-weight:bolder;
+}
+
+h3, label {
+    font-weight: bold;
+}
+
+.logo_reducido {
+    max-width: 150px;
+}
+
+.i-orange {
+    color: var(--naranja-quemado);
+}
+
+.i-white {
+    color: var(--blanco) !important;
+}
+
+.respuesta-correcta {
+    font-weight: bolder;
+    color: green
+}
+
+.navbar {
+    background-color: var(--rosa-muy-claro);
+    font-weight: bold;
+    font-size:large;
+}
+
+.btn-primary , .btn-primary:active, .btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {
+    background-color: var(--naranja-quemado);
+    border-color: var(--rosa-muy-claro);
+}
+.btn-primary:hover{
+    background-color: var(--naranja-quemado-oscuro);
+    border-color: var(--rosa-claro);
+}
+.btn-primary:disabled {
+    background-color: var(--rosa-claro);
+    border-color: var(--rosa-claro);
+}
+
+.btn-outline-primary, .btn-outline-primary:active {
+    color: var(--naranja-quemado);
+    border-color: var(--naranja-quemado);
+}
+.btn-outline-primary:hover {
+    background-color: var(--naranja-quemado-oscuro);
+    border-color: var(--naranja-quemado-oscuro);
+}
+
+.my-btn, .my-btn:active {
+    color: var(--naranja-quemado);
+    border: 1px solid var(--naranja-quemado);
+    margin-left: 20px;
+}
+
+.my-btn:hover {
+    background-color: var(--naranja-quemado);
+    border-color: var(--naranja-quemado);
+}
+
+
+.card-custom {
+    background-color: #f8d7da; /* Color de fondo rosado */
+    margin-top: 50px
+}
+
+.card-custom .card-body {
+    padding: 20px; /* Espaciado interno */
+}
+
+.my-own-form > input {
+    display: block; /* Muestra como bloque */
+    width: 100%; /* Ancho completo */
+    height: calc(2.25rem + 2px); /* Ajusta según la altura deseada */
+    padding: 0.375rem 0.75rem; /* Espaciado interno */
+    font-size: 1rem; /* Tamaño de fuente base */
+    line-height: 1.5; /* Altura de línea */
+    color: #495057; /* Color del texto (ajusta según sea necesario) */
+    background-color: #fff; /* Color de fondo */
+    background-clip: padding-box; /* Clip del fondo */
+    border: 1px solid #ced4da; /* Borde sólido */
+    border-radius: 0.25rem; /* Borde redondeado */
+    box-shadow: none; /* Sin sombra por defecto */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Transiciones suaves */
+}
+
+.respuesta-rectangulo {
+    display: block;
+    padding: 15px;
+    border: 2px solid var(--naranja-quemado); /* Color del borde */
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.respuesta-rectangulo:hover {
+    background-color: var(--naranja-quemado); /* Color al pasar el mouse */
+}
+
+.form-check-input-custom:checked + .form-check-label-custom {
+    background-color:  --naranja-quemado; /* Color al seleccionar */
+    color: white; /* Color del texto al seleccionar */
+}
+
+.form-check-input:checked {
+    background-color: var(--naranja-quemado-oscuro);
+    border-color: var(--naranja-quemado-oscuro);
+}
+
+.custom-container {
+    width: 50%; /* Ancho del 50% por defecto */
+}
+
+.custom-container-2 {
+    width: 75%;
+}
+
+@media (max-width: 576px) {
+    .custom-container {
+        width: 100%;
+    }
+    .custom-container-2 {
+        width: 100%;
+    }
+}
+
