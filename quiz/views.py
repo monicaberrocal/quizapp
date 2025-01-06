@@ -42,13 +42,19 @@ def crear_asignatura(request):
 
     asignaturas = Asignatura.objects.filter(usuario=request.user)
 
+    asignaturas_con_preguntas_falladas = asignaturas.filter(
+        temas__preguntas__fallos__gt=0
+    )
+
     for asignatura in asignaturas:
         asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
-
+        asignatura.tiene_fallos = asignatura in asignaturas_con_preguntas_falladas
+    
     return render(request, 'quiz/crear_asignatura.html', {
         'form': form,
         'form_file':form_file,
-        'asignaturas': asignaturas})
+        'asignaturas': asignaturas
+    })
 
 @login_required
 def vista_asignatura(request, id):
@@ -58,6 +64,11 @@ def vista_asignatura(request, id):
         tema__asignatura=asignatura,
         fallos__gt=0
     ).count()
+
+    temas_con_preguntas_falladas = Tema.objects.filter(
+        asignatura=asignatura,
+        preguntas__fallos__gt=0
+    )
 
     if request.method == 'POST':
         if 'file' in request.FILES:
@@ -80,6 +91,7 @@ def vista_asignatura(request, id):
     return render(request, 'quiz/asignatura.html', {
         'asignatura': asignatura,
         'preguntas_con_fallos': preguntas_con_fallos,
+        'temas_con_preguntas_falladas': temas_con_preguntas_falladas,
         'form': form,
         'form_file': form_file
         })

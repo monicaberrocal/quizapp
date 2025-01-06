@@ -8,10 +8,10 @@
 
     <div class="text-center mb-4">
         <a class="btn btn-outline-primary mb-2" href="{% url 'exportar_asignatura' asignatura.id %}">
-            Descargar asignaturas
+            Descargar asignatura {{ asignatura.nombre }}
         </a>
         <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_formulario" aria-expanded="false" aria-controls="collapse_formulario">
-            Importar temas a la asignatura: {{ asignatura.nombre }}
+            Importar temas a la asignatura {{ asignatura.nombre }}
         </button>
         <div class="collapse" id="collapse_formulario">
             <div class="card p-3 mt-2" style="max-width: 400px; margin: auto;">
@@ -50,7 +50,18 @@
                             <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
                                 <div class="d-flex justify-content-center justify-content-md-end"> <!-- Centrar en móviles -->
                                     <a href="{% url 'estudiar_tema' tema.id %}" class="btn btn-outline-primary me-2">Estudiar</a>
-                                    <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                                    {% if tema in temas_con_preguntas_falladas %}
+                                        <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                                    {% else %}
+                                        <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {%else%}
+                            <div class="col-12 col-md-4"> <!-- Cambiar a col-12 para móviles -->
+                                <div class="d-flex justify-content-center justify-content-md-end"> <!-- Centrar en móviles -->
+                                    <a class="btn btn-outline-primary me-2 invisible">Estudiar</a>
+                                    <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
                                 </div>
                             </div>
                         {%endif%}
