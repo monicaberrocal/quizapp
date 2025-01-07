@@ -97,8 +97,8 @@ def vista_asignatura(request, id):
         })
 
 @login_required
-def eliminar_asignatura(request, id):
-    asignatura = get_object_or_404(Asignatura, id=id, usuario=request.user)
+def eliminar_asignatura(request, asignatura_id):
+    asignatura = get_object_or_404(Asignatura, id=asignatura_id, usuario=request.user)
     asignatura.delete()
     return redirect('crear_asignatura')
 
@@ -231,14 +231,14 @@ def vista_tema(request, id):
     })
 
 @login_required
-def eliminar_tema(request, id):
-    tema = get_object_or_404(Tema, id=id, asignatura__usuario=request.user)
+def eliminar_tema(request, tema_id):
+    tema = get_object_or_404(Tema, id=tema_id, asignatura__usuario=request.user)
     tema.delete()
     return redirect('crear_tema')
 
 @login_required
 def eliminar_tema_asignatura(request, tema_id, asignatura_id):
-    tema = get_object_or_404(Tema, id=id, asignatura__usuario=request.user)
+    tema = get_object_or_404(Tema, id=tema_id, asignatura__usuario=request.user)
     tema.delete()
     return redirect('vista_asignatura', asignatura_id)
 
