@@ -1,0 +1,15 @@
+{% extends "quiz/tema/tema_base.html" %}
+
+{% block contenido_extra %}
+    <div class="d-flex align-items-center">
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+                <div class="my-own-form">
+                    {{ form_tema.nombre }}
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg i-white"></i></button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

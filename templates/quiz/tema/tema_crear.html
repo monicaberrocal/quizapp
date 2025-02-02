@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container custom-container-2">
+
+    <div class="card card-custom mb-4">
+        <div class="card-body">
+            <h2>
+                <a href="#collapse_crearTema" data-bs-toggle="collapse" data-bs-target="#collapse_crearTema" aria-expanded="false" aria-controls="collapse_crearTema" class="link-no-style d-flex align-items-center">
+                    Crear Tema
+                    <i class="bi bi-chevron-down chevron-icon ms-2"></i>
+                </a>
+            </h2>
+            <div class="collapse" id="collapse_crearTema">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-custom mb-4">
+        <div class="card-body">
+            <h2>Temas Creados</h2>
+            {% for asignatura in asignaturas %}
+                <div class="mb-4">
+                    <h4 class="d-flex align-items-center">
+                        <span class="me-3">{{ asignatura.nombre }}</span>
+                        <hr class="flex-grow-1 my-0">
+                    </h4>
+                    <div class="mb-3">
+                        {% for tema in asignatura.temas.all %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-4">
+                                        <a href="{% url 'vista_tema' tema.id %}" class="btn btn-primary w-100">{{ tema.nombre }}</a>
+                                    </div>
+                                    {% if tema.preguntas.exists %}
+                                        <div class="col-12 col-md-4">
+                                            <div class="d-flex justify-content-center justify-content-md-end">
+                                                <a href="{% url 'estudiar_tema' tema.id %}" class="btn btn-outline-primary me-2">Estudiar</a>
+                                                {% if tema in temas_con_preguntas_falladas %}
+                                                    <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                                                {% else %}
+                                                    <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {%else%}
+                                        <div class="col-12 col-md-4">
+                                            <div class="d-flex justify-content-center justify-content-md-end">
+                                                <a class="btn btn-outline-primary me-2 invisible">Estudiar</a>
+                                                <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
+                                            </div>
+                                        </div>
+                                    {%endif%}
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex justify-content-center justify-content-md-end">
+                                            <form action="{% url 'eliminar_tema' tema.id %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar el tema {{ tema.nombre|escapejs }} de la asignatura {{ asignatura.nombre|escapejs}}?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger">Eliminar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No hay temas creados para esta asignatura.</li>
+                        {% endfor %}
+                        </div>
+                </div>
+            {% empty %}
+                <p>No hay asignaturas disponibles.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

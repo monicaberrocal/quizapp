@@ -51,7 +51,7 @@ h3, label {
 
 .respuesta-correcta {
     font-weight: bolder;
-    color: green
+    color: pink
 }
 
 .navbar {
@@ -160,3 +160,7 @@ h3, label {
     }
 }
 
+.link-no-style {
+    text-decoration: none;
+    color: inherit;
+}

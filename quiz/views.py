@@ -1,11 +1,23 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .forms import AsignaturaForm, ImportFileForm, PreguntaConRespuestasFormWithoutTema, TemaForm, PreguntaConRespuestasForm, RegistroUsuarioForm, TemaFormWithoutAsignatura
-from .models import Pregunta, Respuesta, Asignatura, Tema, Pregunta
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 import json
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-
+from .forms import (
+    AsignaturaForm,
+    ImportFileForm,
+    PreguntaConRespuestasForm,
+    PreguntaConRespuestasFormWithoutTema,
+    RegistroUsuarioForm,
+    TemaForm,
+    TemaFormWithoutAsignatura,
+)
+from .models import Asignatura, Pregunta, Respuesta, Tema
+from utils.openai_utils import generate_questions
+import fitz
+import pdfplumber
+import docx
+import os
 
 def homepage(request):
     return render(request, 'quiz/homepage.html')
@@ -23,7 +35,7 @@ def registrar_usuario(request):
 ### ASIGNATURA ###
 
 @login_required
-def crear_asignatura(request):
+def asignatura_crear(request):
     if request.method == 'POST':
         if 'file' in request.FILES:
             form_file = ImportFileForm(request.POST, request.FILES)
@@ -35,10 +47,9 @@ def crear_asignatura(request):
                 asignatura = form.save(commit=False)
                 asignatura.usuario = request.user
                 asignatura.save()
-                return redirect('crear_asignatura')
+                return redirect('asignatura_crear')
     else:
         form = AsignaturaForm()
-        form_file = ImportFileForm()
 
     asignaturas = Asignatura.objects.filter(usuario=request.user)
 
@@ -50,9 +61,8 @@ def crear_asignatura(request):
         asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
         asignatura.tiene_fallos = asignatura in asignaturas_con_preguntas_falladas
     
-    return render(request, 'quiz/crear_asignatura.html', {
+    return render(request, 'quiz/asignatura/asignatura_crear.html', {
         'form': form,
-        'form_file':form_file,
         'asignaturas': asignaturas
     })
 
@@ -84,23 +94,21 @@ def vista_asignatura(request, id):
                 return redirect('vista_asignatura', id)
     else:
         form = TemaFormWithoutAsignatura(asignatura_id=id)
-        form_file = ImportFileForm()
 
     asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
 
-    return render(request, 'quiz/asignatura.html', {
+    return render(request, 'quiz/asignatura/asignatura.html', {
         'asignatura': asignatura,
         'preguntas_con_fallos': preguntas_con_fallos,
         'temas_con_preguntas_falladas': temas_con_preguntas_falladas,
-        'form': form,
-        'form_file': form_file
+        'form': form
         })
 
 @login_required
 def eliminar_asignatura(request, asignatura_id):
     asignatura = get_object_or_404(Asignatura, id=asignatura_id, usuario=request.user)
     asignatura.delete()
-    return redirect('crear_asignatura')
+    return redirect('asignatura_crear')
 
 @login_required
 def editar_asignatura(request, id):
@@ -121,11 +129,25 @@ def editar_asignatura(request, id):
         form_tema = TemaFormWithoutAsignatura(asignatura_id=id)
         form_asignatura = AsignaturaForm(instance=asignatura)
 
-    return render(request, 'quiz/editar_asignatura.html', {
+    preguntas_con_fallos = Pregunta.objects.filter(
+        tema__asignatura=asignatura,
+        fallos__gt=0
+    ).count()
+
+    temas_con_preguntas_falladas = Tema.objects.filter(
+        asignatura=asignatura,
+        preguntas__fallos__gt=0
+    )
+
+    asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
+
+    return render(request, 'quiz/asignatura/asignatura_editar.html', {
         'asignatura': asignatura,
-        'form_tema': form_tema,
+        'preguntas_con_fallos': preguntas_con_fallos,
+        'temas_con_preguntas_falladas': temas_con_preguntas_falladas,
+        'form': form_tema,
         'form_asignatura': form_asignatura
-    })
+        })
 
 @login_required
 def estudiar_asignatura(request, id):
@@ -139,7 +161,7 @@ def estudiar_asignatura(request, id):
     request.session['respuestas_correctas'] = 0
     request.session['total_respondidas'] = 0
     
-    return redirect('mostrar_pregunta')
+    return redirect('pregunta_mostrar')
 
 @login_required
 def repasar_asignatura(request, id):
@@ -153,12 +175,12 @@ def repasar_asignatura(request, id):
     request.session['respuestas_correctas'] = 0
     request.session['total_respondidas'] = 0
     
-    return redirect('mostrar_pregunta')
+    return redirect('pregunta_mostrar')
 
 ### TEMA ###
 
 @login_required
-def crear_tema(request):
+def tema_crear(request):
     if request.method == 'POST':
         form = TemaForm(request.POST, user=request.user)
         if form.is_valid():
@@ -166,17 +188,27 @@ def crear_tema(request):
             if tema.asignatura.usuario != request.user:
                 return HttpResponseForbidden(render(request, '403.html'))
             tema.save()
-            return redirect('crear_tema')
+            return redirect('tema_crear')
     else:
         form = TemaForm(user=request.user)
 
     asignaturas = Asignatura.objects.filter(usuario=request.user).prefetch_related('temas')
 
-    return render(request, 'quiz/crear_tema.html', {'form': form, 'asignaturas': asignaturas})
+    temas_con_preguntas_falladas = Tema.objects.filter(
+        asignatura__in=asignaturas,
+        preguntas__fallos__gt=0
+    )
+
+    return render(request, 'quiz/tema/tema_crear.html', {
+        'form': form,
+        'asignaturas': asignaturas,
+        'temas_con_preguntas_falladas': temas_con_preguntas_falladas
+    })
 
 @login_required
 def vista_tema(request, id):
     tema = get_object_or_404(Tema, id=id, asignatura__usuario=request.user)
+    form = PreguntaConRespuestasFormWithoutTema(tema_id=id)
 
     preguntas_con_fallos = Pregunta.objects.filter(
         tema=tema,
@@ -184,11 +216,14 @@ def vista_tema(request, id):
     ).count()
 
     if request.method == 'POST':
-        if 'file' in request.FILES:
+        action = request.POST.get("action")
+
+        if action == "importar" and 'file' in request.FILES:
             form_file = ImportFileForm(request.POST, request.FILES)
             if form_file.is_valid():
                 return importar_tema(request.FILES['file'], id)
-        else:
+            
+        elif action == "crear":
             form = PreguntaConRespuestasFormWithoutTema(request.POST, tema_id=id)
             if form.is_valid():
                 pregunta = Pregunta.objects.create(
@@ -214,27 +249,28 @@ def vista_tema(request, id):
                 errors = form.errors.as_text().splitlines()
                 filtered_errors = [error for error in errors if not error.startswith('* __all__')]
                 error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/tema.html', {
+                return render(request, 'quiz/tema/tema.html', {
                     'tema': tema,
                     'form': form,
                     'error_message': error_message
                 })
-    else:
-        form = PreguntaConRespuestasFormWithoutTema(tema_id=id)
-        form_file = ImportFileForm()
+            
+        elif action == "generar" and 'file' in request.FILES:
+            form_file = ImportFileForm(request.POST, request.FILES)
+            if form_file.is_valid():
+                return generar_tema(request.FILES['file'], id)
 
-    return render(request, 'quiz/tema.html', {
+    return render(request, 'quiz/tema/tema.html', {
         'tema': tema,
         'preguntas_con_fallos': preguntas_con_fallos,
-        'form': form,
-        'form_file': form_file
+        'form': form
     })
 
 @login_required
 def eliminar_tema(request, tema_id):
     tema = get_object_or_404(Tema, id=tema_id, asignatura__usuario=request.user)
     tema.delete()
-    return redirect('crear_tema')
+    return redirect('tema_crear')
 
 @login_required
 def eliminar_tema_asignatura(request, tema_id, asignatura_id):
@@ -276,9 +312,9 @@ def editar_tema(request, id):
                 errors = form_pregunta.errors.as_text().splitlines()
                 filtered_errors = [error for error in errors if not error.startswith('* __all__')]
                 error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/editar_tema.html', {
+                return render(request, 'quiz/tema/tema_editar.html', {
                     'tema': tema,
-                    'form_pregunta': form_pregunta,
+                    'form': form_pregunta,
                     'form_tema': form_tema,
                     'error_message': error_message
                 })
@@ -291,16 +327,16 @@ def editar_tema(request, id):
                 errors = form_tema.errors.as_text().splitlines()
                 filtered_errors = [error for error in errors if not error.startswith('* __all__')]
                 error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/editar_tema.html', {
+                return render(request, 'quiz/tema/tema_editar.html', {
                     'tema': tema,
-                    'form_pregunta': form_pregunta,
+                    'form': form_pregunta,
                     'form_tema': form_tema,
                     'error_message': error_message
                 })
 
-    return render(request, 'quiz/editar_tema.html', {
+    return render(request, 'quiz/tema/tema_editar.html', {
         'tema': tema, 
-        'form_pregunta': form_pregunta,
+        'form': form_pregunta,
         'form_tema': form_tema
     })
 
@@ -316,7 +352,7 @@ def estudiar_tema(request, id):
     request.session['respuestas_correctas'] = 0
     request.session['total_respondidas'] = 0
     
-    return redirect('mostrar_pregunta')
+    return redirect('pregunta_mostrar')
 
 @login_required
 def repasar_tema(request, id):
@@ -330,7 +366,7 @@ def repasar_tema(request, id):
     request.session['respuestas_correctas'] = 0
     request.session['total_respondidas'] = 0
     
-    return redirect('mostrar_pregunta')
+    return redirect('pregunta_mostrar')
 
 ### PREGUNTA ###
 
@@ -369,7 +405,7 @@ def crear_pregunta_con_respuestas(request):
 @login_required
 def pregunta_vista(request, id):
     pregunta = get_object_or_404(Pregunta, id=id, tema__asignatura__usuario=request.user)
-    return render(request, 'quiz/pregunta.html', {'pregunta': pregunta})
+    return render(request, 'quiz/pregunta/pregunta.html', {'pregunta': pregunta})
 
 @login_required
 def eliminar_pregunta(request, pregunta_id, tema_id):
@@ -387,7 +423,7 @@ def mi_error_403(request, exception):
 ### TESTS ###
 
 @login_required
-def mostrar_pregunta(request):
+def pregunta_mostrar(request):
     pregunta_actual_index = request.session.get('pregunta_actual', 0)
     preguntas_ids = request.session.get('preguntas_ids', [])
 
@@ -400,7 +436,7 @@ def mostrar_pregunta(request):
     pregunta.save()
     respuestas = pregunta.respuestas.all().order_by('?')
 
-    return render(request, 'quiz/mostrar_pregunta.html', {
+    return render(request, 'quiz/pregunta/pregunta_mostrar.html', {
         'pregunta': pregunta,
         'respuestas': respuestas,
         'pregunta_actual_index': pregunta_actual_index + 1,
@@ -434,12 +470,12 @@ def procesar_respuesta(request):
             pregunta.fallos += 1
             pregunta.save()
 
-        return redirect('mostrar_respuesta')
+        return redirect('respuesta_mostrar')
 
-    return redirect('mostrar_pregunta')
+    return redirect('pregunta_mostrar')
 
 @login_required
-def mostrar_respuesta(request):
+def respuesta_mostrar(request):
     correcto = request.session.get('respuesta_correcta', False)
     pregunta_actual_index = request.session.get('pregunta_actual', 0)
     preguntas_ids = request.session.get('preguntas_ids', [])
@@ -460,7 +496,7 @@ def mostrar_respuesta(request):
 
     request.session.pop('respuesta_correcta', None)
 
-    return render(request, 'quiz/mostrar_respuesta.html', {
+    return render(request, 'quiz/pregunta/respuesta_mostrar.html', {
         'mensaje': mensaje,
         'pregunta': pregunta,
         'correcto': correcto,
@@ -618,7 +654,6 @@ def exportar_tema(request, id):
 
     return response
 
-
 @csrf_exempt
 def importar_asignaturas(file, user):
     try:
@@ -655,7 +690,7 @@ def importar_asignaturas(file, user):
                         pregunta.respuesta_correcta = respuestas[0]
                         pregunta.save()
 
-        return redirect(crear_asignatura)
+        return redirect(asignatura_crear)
 
     except json.JSONDecodeError:
         return JsonResponse({'status': 'error', 'message': 'Error al decodificar el JSON.'}, status=400)
@@ -733,3 +768,150 @@ def importar_tema(file, id):
         return JsonResponse({'status': 'error', 'message': 'Error al decodificar el JSON.'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+from django.http import JsonResponse
+import traceback
+
+def generar_tema(file, id):
+    try:
+        file_extension = os.path.splitext(file.name)[1].lower()
+        
+        if file_extension == ".pdf":
+            texto = extraer_texto_pdf(file, id)
+            print(texto)
+        elif file_extension in [".doc", ".docx"]:
+            texto = extraer_texto_doc(file)
+        else:
+            return JsonResponse({"success": False, "error": "Formato no soportado"}, status=400)
+
+        return JsonResponse({"success": True, "texto": texto})
+
+    except Exception as e:
+        error_trace = traceback.format_exc()  # Captura la traza del error
+        print(error_trace)  # Imprime la traza en la consola
+
+        return JsonResponse({
+            "success": False,
+            "error": f"Error al procesar el archivo: {str(e)}",
+            "trace": error_trace  # Puedes incluir la traza en la respuesta si lo deseas
+        }, status=500)
+
+from io import BytesIO
+
+def convert_uploaded_file_to_bytesio(uploaded_file):
+    """Convierte un archivo subido en Django a un objeto BytesIO"""
+    file_bytes = uploaded_file.read()  # Leer el contenido del archivo
+    return BytesIO(file_bytes)  # Convertirlo en BytesIO
+
+
+import fitz  # PyMuPDF
+import pdfplumber
+import PyPDF2
+from pdfminer.high_level import extract_text
+import pytesseract
+from pdf2image import convert_from_bytes
+from io import BytesIO
+
+def extract_text_pymupdf(pdf_bytes):
+    """Extraer texto por página usando PyMuPDF"""
+    doc = fitz.open(stream=pdf_bytes.read(), filetype="pdf")
+    return [page.get_text("text") for page in doc]
+
+def extract_text_pdfplumber(pdf_bytes):
+    """Extraer texto por página usando pdfplumber"""
+    pdf_bytes.seek(0)
+    with pdfplumber.open(pdf_bytes) as pdf:
+        return [page.extract_text() or "" for page in pdf.pages]
+
+def extract_text_pypdf2(pdf_bytes):
+    """Extraer texto por página usando PyPDF2"""
+    pdf_bytes.seek(0)
+    reader = PyPDF2.PdfReader(pdf_bytes)
+    return [page.extract_text() or "" for page in reader.pages]
+
+def extract_text_pdfminer(pdf_bytes):
+    """Extraer texto por página usando PDFMiner"""
+    pdf_bytes.seek(0)
+    return extract_text(pdf_bytes).split("\f")  # Divide por páginas
+
+def extract_text_pdfminer_fixed(pdf_path):
+    """Extrae texto y corrige el número de páginas"""
+    text = extract_text(pdf_path)
+    pages = text.split("\f")  # Separar páginas por el caracter de salto de página
+    
+    # Filtrar páginas vacías para evitar falsos positivos
+    pages = [p for p in pages if p.strip()]
+    
+    return pages  # Devuelve el array de páginas
+
+def extract_text_tesseract(pdf_bytes):
+    """Extraer texto de imágenes escaneadas usando Tesseract OCR"""
+    pdf_bytes.seek(0)
+    images = convert_from_bytes(pdf_bytes.read())  # Convertir PDF en imágenes
+    return [pytesseract.image_to_string(img) for img in images]
+
+def extract_text_combined(pdf_file):
+    """Convierte el archivo a BytesIO y almacena los textos en 5 arrays diferentes"""
+    pdf_bytes = convert_uploaded_file_to_bytesio(pdf_file)
+
+    print('generando pymupdf...')
+    text_pymupdf = extract_text_pymupdf(BytesIO(pdf_bytes.getvalue()))
+    print('generando pdfplumber...')
+    text_pdfplumber = extract_text_pdfplumber(BytesIO(pdf_bytes.getvalue()))
+    print('generando pypdf2...')
+    text_pypdf2 = extract_text_pypdf2(BytesIO(pdf_bytes.getvalue()))
+    print('generando pdfminer...')
+    text_pdfminer = extract_text_pdfminer_fixed(BytesIO(pdf_bytes.getvalue()))
+    print('generando tesseract...')
+    text_tesseract = extract_text_tesseract(BytesIO(pdf_bytes.getvalue()))
+
+    return text_pymupdf, text_pdfplumber, text_pypdf2, text_pdfminer, text_tesseract
+
+import openai
+from django.conf import settings
+
+def extraer_texto_pdf(file, id):
+    text_pymupdf, text_pdfplumber, text_pypdf2, text_pdfminer, text_tesseract = extract_text_combined(file)
+
+    file.close()
+
+    client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+    respuesta = ''
+    
+    for i in range(len(text_pdfminer)):
+        text = '-¿!11441165473941=(-' + text_pymupdf[i] + '-¿!11441165473941=(-' + text_pdfplumber[i] + '-¿!11441165473941=(-' + text_pypdf2[i] + '-¿!11441165473941=(-' + text_pdfminer[i] + '-¿!11441165473941=(-' + text_tesseract[i]
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
+                messages=[
+                    {"role": "system", "content": "He usado 5 librerías para extraer el texto de un pdf. Los 5 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 5 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
+                    {"role": "user", "content": text},
+                ],
+                temperature=0.7
+            )
+            respuesta += response.choices[0].message.content
+        except Exception as e:
+            return f"Error en la solicitud a OpenAI: {str(e)}"
+
+    return redirect(vista_tema, id)
+
+
+# 🔹 Función para extraer texto de DOC/DOCX
+def extraer_texto_doc(file):
+    texto = ""
+    doc = docx.Document(file)
+    for para in doc.paragraphs:
+        texto += para.text + "\n"
+    return texto.strip()
+
+from django.http import JsonResponse
+from utils.openai_utils import generate_questions
+
+def pruebas(request):
+    try:
+        instructions = "He usado 5 librerías para extraer el texto de un pdf. Los 5 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 5 extracciones. No escribas nada más que el texto limpio final."
+        theme_text = "Texto 1:"
+        result = generate_questions(theme_text, instructions)
+        return JsonResponse({"result": result})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

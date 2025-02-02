@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<div class="container custom-container-2">
+
+    <div class="text-center mb-4">
+        {% if asignatura.tiene_preguntas %}
+            <a class="btn btn-outline-primary mb-2" href="{% url 'exportar_asignatura' asignatura.id %}">
+                Descargar asignatura <span class="name-bold-naranja">{{ asignatura.nombre }}</span>
+            </a>
+        {% endif %}
+        <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_formulario" aria-expanded="false" aria-controls="collapse_formulario">
+            Importar temas a la asignatura <span class="name-bold-naranja">{{ asignatura.nombre }}</span>
+        </button>
+        <div class="collapse" id="collapse_formulario">
+            <div class="card p-3 mt-2" style="max-width: 400px; margin: auto;">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="fileInput" class="form-label">Selecciona un archivo JSON:</label>
+                        <input type="file" id="fileInput" name="file" class="form-control" accept=".json">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% block contenido_extra %}
+    {% endblock %}
+
+    <div class="collapse" id="collapse_temas">
+        <ul class="list-group">
+            {% for tema in asignatura.temas.all %}
+                <li class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-4">
+                            <a href="{% url 'vista_tema' tema.id %}" class="btn btn-primary w-100">{{ tema.nombre }}</a>
+                        </div>
+                        {% if tema.preguntas.exists %}
+                            <div class="col-12 col-md-4">
+                                <div class="d-flex justify-content-center justify-content-md-end">
+                                    <a href="{% url 'estudiar_tema' tema.id %}" class="btn btn-outline-primary me-2">Estudiar</a>
+                                    {% if tema in temas_con_preguntas_falladas %}
+                                        <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-outline-primary me-2">Repasar</a>
+                                    {% else %}
+                                        <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {%else%}
+                            <div class="col-12 col-md-4">
+                                <div class="d-flex justify-content-center justify-content-md-end">
+                                    <a class="btn btn-outline-primary me-2 invisible">Estudiar</a>
+                                    <a class="btn btn-outline-primary me-2 invisible">Repasar</a>
+                                </div>
+                            </div>
+                        {%endif%}
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex justify-content-center justify-content-md-end">
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal" 
+                                        data-tema="{{ tema.nombre|escapejs }}" data-asignatura="{{ asignatura.nombre|escapejs }}" 
+                                        data-url="{% url 'eliminar_tema_asignatura' tema.id asignatura.id %}">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No hay temas creados para esta asignatura.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if asignatura.tiene_preguntas %}
+        <div class="text-center mb-4 mt-4">
+            <div class="d-flex justify-content-center align-items-start">
+                <div class="me-2">
+                    <a href="{% url 'estudiar_asignatura' asignatura.id %}" class="btn btn-primary btn-lg">Estudiar <span class="name-bold">{{asignatura.nombre}}</span></a>
+                </div>
+                {% if preguntas_con_fallos > 0 %}
+                    <div>
+                        <a href="{% url 'repasar_asignatura' asignatura.id %}" class="btn btn-primary btn-lg">Repasar <span class="name-bold">{{asignatura.nombre}}</span></a>
+                    </div>
+                {% endif %}
+            </div>
+            {% if preguntas_con_fallos > 0 %}
+            <div class="mt-2">
+                <span class="badge bg-warning text-dark">
+                    {{ preguntas_con_fallos }} pregunta{% if preguntas_con_fallos != 1 %}s{% endif %} con fallos
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    {%endif%}
+
+    <div class="card card-custom mb-4">
+        <div class="card-body">
+            <h2>
+                <a href="#collapse_crearAsignatura" data-bs-toggle="collapse" data-bs-target="#collapse_crearTema" aria-expanded="false" aria-controls="collapse_crearTema" class="link-no-style d-flex align-items-center">
+                    Crear Tema
+                    <i class="bi bi-chevron-down chevron-icon ms-2"></i>
+                </a>
+            </h2>
+            <div class="collapse" id="collapse_crearTema">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar el tema <span class="name-bold" id="modalTema"></span> de la asignatura <span class="name-bold" id="modalAsignatura"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var confirmModal = document.getElementById('confirmModal');
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget; 
+        var temaNombre = button.getAttribute('data-tema');
+        var asignaturaNombre = button.getAttribute('data-asignatura');
+        var url = button.getAttribute('data-url');
+
+        document.getElementById('modalTema').textContent = temaNombre;
+        document.getElementById('modalAsignatura').textContent = asignaturaNombre;
+        document.getElementById('deleteForm').action = url;
+    });
+</script>
+
+
+{% endblock %}
