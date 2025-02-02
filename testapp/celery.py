@@ -1,7 +1,7 @@
 import os
 from celery import Celery
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quiz.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")
 
 celery_app = Celery("quiz")
 celery_app.config_from_object("django.conf:settings", namespace="CELERY")
