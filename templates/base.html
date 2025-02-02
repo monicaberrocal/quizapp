@@ -32,18 +32,16 @@
                 <img class="logo_reducido" src="{% static 'quiz/img/logo_reducido.png' %}" alt="Logo">
             </a>
             
-            <!-- Botón de colapso -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
     
-            <!-- Div colapsable -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if user.is_authenticated %}
                 <div class="navbar-nav ms-auto">
-                    <a class="nav-item nav-link" href="{% url 'crear_asignatura' %}">Asignaturas</a>
-                    <a class="nav-item nav-link" href="{% url 'crear_tema' %}">Temas</a>
-                    <a class="nav-item nav-link" href="{% url 'crear_pregunta_con_respuestas' %}">Preguntas</a>
+                    <a class="nav-item nav-link" href="{% url 'asignatura_crear' %}">Asignaturas</a>
+                    <a class="nav-item nav-link" href="{% url 'tema_crear' %}">Temas</a>
+                    <!-- <a class="nav-item nav-link" href="{% url 'crear_pregunta_con_respuestas' %}">Preguntas</a> -->
                 </div>
                 {% endif %}
                 <div class="navbar-nav ms-auto">
@@ -63,7 +61,6 @@
         {% block content %}{% endblock %}
     </div>
     
-        <!-- Modal para mostrar errores -->
     <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

@@ -1,0 +1,10 @@
+{% extends "quiz/tema/tema_base.html" %}
+
+{% block contenido_extra %}
+    <div class="d-flex align-items-center">
+        <h1 style="margin-right: 10px;">{{ tema.nombre }}</h1>
+        <a href="{% url 'editar_tema' tema.id %}">
+            <i class="bi bi-pencil-square i-orange" style="font-size: 24px;""></i>
+        </a>
+    </div>
+{% endblock %}

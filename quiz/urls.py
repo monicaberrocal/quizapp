@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import crear_pregunta_con_respuestas, crear_asignatura, crear_tema, editar_asignatura, editar_tema, exportar_asignatura, exportar_asignaturas, exportar_tema, finalizar_test, mostrar_pregunta, mostrar_respuesta, procesar_respuesta, registrar_usuario, vista_asignatura, eliminar_asignatura, vista_tema, eliminar_tema, eliminar_tema_asignatura, pregunta_vista, eliminar_pregunta, estudiar_asignatura, repasar_asignatura, estudiar_tema, repasar_tema
+from .views import crear_pregunta_con_respuestas, asignatura_crear, tema_crear, editar_asignatura, editar_tema, exportar_asignatura, exportar_asignaturas, exportar_tema, finalizar_test, pregunta_mostrar, respuesta_mostrar, procesar_respuesta, registrar_usuario, vista_asignatura, eliminar_asignatura, vista_tema, eliminar_tema, eliminar_tema_asignatura, pregunta_vista, eliminar_pregunta, estudiar_asignatura, repasar_asignatura, estudiar_tema, repasar_tema, pruebas
 from django.conf.urls import handler404, handler403
 from .views import mi_error_404, mi_error_403
 
@@ -9,8 +9,8 @@ handler403 = mi_error_403
 
 urlpatterns = [
     path('crear-pregunta/', crear_pregunta_con_respuestas, name='crear_pregunta_con_respuestas'),
-    path('crear-asignatura/', crear_asignatura, name='crear_asignatura'),
-    path('crear-tema/', crear_tema, name='crear_tema'),
+    path('crear-asignatura/', asignatura_crear, name='asignatura_crear'),
+    path('crear-tema/', tema_crear, name='tema_crear'),
     path('registrar/', registrar_usuario, name='registrar_usuario'),
     path('login/', auth_views.LoginView.as_view(template_name='quiz/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -27,11 +27,12 @@ urlpatterns = [
     path('asignatura/repasar/<int:id>/', repasar_asignatura, name='repasar_asignatura'),
     path('tema/estudiar/<int:id>/', estudiar_tema, name='estudiar_tema'),
     path('tema/repasar/<int:id>/', repasar_tema, name='repasar_tema'),
-    path('mostrar_pregunta/', mostrar_pregunta, name='mostrar_pregunta'),
-    path('procesar_respuesta/', procesar_respuesta, name='procesar_respuesta'),
-    path('mostrar_respuesta/', mostrar_respuesta, name='mostrar_respuesta'),
-    path('finalizar_test/', finalizar_test, name='finalizar_test'),
-    path('exportar_asignaturas/', exportar_asignaturas, name='exportar_asignaturas'),
-    path('exportar_asignatura/<int:id>/', exportar_asignatura, name='exportar_asignatura'),
-    path('exportar_tema/<int:id>/', exportar_tema, name='exportar_tema')
+    path('mostrar-pregunta/', pregunta_mostrar, name='pregunta_mostrar'),
+    path('procesar-respuesta/', procesar_respuesta, name='procesar_respuesta'),
+    path('mostrar-respuesta/', respuesta_mostrar, name='respuesta_mostrar'),
+    path('finalizar-test/', finalizar_test, name='finalizar_test'),
+    path('exportar-asignaturas/', exportar_asignaturas, name='exportar_asignaturas'),
+    path('exportar-asignatura/<int:id>/', exportar_asignatura, name='exportar_asignatura'),
+    path('exportar-tema/<int:id>/', exportar_tema, name='exportar_tema'),
+    path('pruebas/', pruebas, name='pruebas'),
 ]

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+<div class="container custom-container-2">
+
+    <div class="text-center mb-4" id="accordion">
+        <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapse_formulario_importar" aria-expanded="false" aria-controls="collapse_formulario_importar">
+            Importar preguntas al tema <span class="name-bold-naranja">{{tema.nombre}}</span>
+        </button>
+
+        <button class="btn btn-outline-primary mb-2 magic-button" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapse_formulario_generar" aria-expanded="false" aria-controls="collapse_formulario_generar">
+            <i class="fa-solid fa-wand-magic-sparkles magic-icon"></i>
+            GENERAR preguntas para el tema <span class="name-bold-naranja">{{tema.nombre}}</span>
+        </button>
+
+        <div class="collapse" id="collapse_formulario_importar" data-bs-parent="#accordion">
+            <div class="card p-4 text-center shadow-lg rounded" style="max-width: 450px; margin: auto; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <h4 class="naranja fw-bold mb-3">Importar preguntas</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="fileInputImportar" class="form-label naranja-oscuro fw-semibold">Selecciona un archivo JSON:</label>
+                        <input type="file" id="fileInputImportar" name="file" class="form-control file-input" accept=".json">
+                    </div>
+                    <button type="submit" name="action" value="importar" class="btn btn-primary btn-glow">Subir</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="collapse" id="collapse_formulario_generar" data-bs-parent="#accordion">
+            <div class="card p-4 text-center shadow-lg rounded" style="max-width: 450px; margin: auto; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <h4 class="naranja fw-bold mb-3">✨ Generador de Preguntas ✨</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="fileInputGenerar" class="form-label naranja-oscuro fw-semibold">Selecciona un archivo PDF o Word:</label>
+                        <input type="file" id="fileInputGenerar" name="file" class="form-control file-input" accept=".pdf, .doc, .docx">
+                    </div>
+                    <button type="submit" name="action" value="generar"  class="btn btn-primary btn-glow">🚀 Subir Archivo</button>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="d-flex align-items-center">
+        {% block contenido_extra %}
+        {% endblock %}
+
+        <a href=" {% url 'vista_asignatura' tema.asignatura.id %}" class="btn btn-outline-primary ms-auto">
+            Volver a <span class="name-bold-naranja">{{tema.asignatura.nombre}}</span>
+        </a>
+    </div>
+
+    <button class="btn btn-outline-primary mb-2 mt-4" type="button" data-bs-toggle="collapse"
+        data-bs-target="#collapse_preguntas" aria-expanded="false" aria-controls="collapse_preguntas">
+        Ver las preguntas ({{tema.preguntas.all.count}})
+    </button>
+
+    <div class="collapse" id="collapse_preguntas">
+        <ul class="list-group">
+            {% for pregunta in tema.preguntas.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse_respuestas_{{pregunta.id}}" aria-expanded="false"
+                        aria-controls="collapse_respuestas_{{pregunta.id}}">
+                        {{ pregunta.texto }}
+                    </button>
+                </div>
+                <div class="d-flex">
+                    <a href="" class="btn btn-outline-primary me-2">
+                        Editar <i class="bi bi-pencil-fill i-orange"></i>
+                    </a>
+                    <form action="{% url 'eliminar_pregunta' pregunta.id tema.id %}" method="post" class="d-inline"
+                        onsubmit="return confirm('¿Estás seguro de que deseas eliminar la pregunta {{ pregunta.texto|escapejs }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary">Eliminar <i class="bi bi-trash-fill i-orange"></i></button>
+                    </form>
+                </div>
+            </li>
+            <ul class="list-group mt-2 collapse" id="collapse_respuestas_{{pregunta.id}}">
+                {% for respuesta in pregunta.respuestas.all %}
+                <li class="list-group-item 
+                    {% if respuesta.id == pregunta.respuesta_correcta.id %}
+                    respuesta-correcta
+                    {% endif %}
+                ">
+                    {% if respuesta.id == pregunta.respuesta_correcta.id %}
+                    <i class="bi bi-arrow-right-circle-fill"></i>&nbsp;&nbsp;
+                    {% endif %}
+                    {{ respuesta.texto }}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No hay respuestas para esta pregunta.</li>
+                {% endfor %}
+            </ul>
+            
+            {% empty %}
+            <li class="list-group-item">No hay preguntas creadas para este tema.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if tema.preguntas.exists %}
+        <div class="text-center mb-4 mt-4">
+            <div class="d-flex justify-content-center align-items-start">
+                <div class="me-2">
+                    <a href="{% url 'estudiar_tema' tema.id %}" class="btn btn-primary btn-lg">
+                        Estudiar {{tema.nombre}}
+                    </a>
+                </div>
+                {% if preguntas_con_fallos > 0 %}
+                <div>
+                    <a href="{% url 'repasar_tema' tema.id %}" class="btn btn-primary btn-lg">
+                        Repasar {{tema.nombre}}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% if preguntas_con_fallos > 0 %}
+            <div class="mt-2">
+                <span class="badge bg-warning text-dark">
+                    {{ preguntas_con_fallos }} pregunta{% if preguntas_con_fallos != 1 %}s{% endif %} con fallos
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="card card-custom mb-5">
+        <div class="card-body">
+            <h2>
+                <a href="#collapse_crearPregunta" data-bs-toggle="collapse" data-bs-target="#collapse_crearPregunta" aria-expanded="false" aria-controls="collapse_crearPregunta" class="link-no-style d-flex align-items-center">
+                    Crear Pregunta
+                    <i class="bi bi-chevron-down chevron-icon ms-2"></i>
+                </a>
+            </h2>
+            <div class="collapse" id="collapse_crearPregunta">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.texto_pregunta|as_crispy_field }}
+
+                    <h3>Respuestas</h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.respuesta1|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.respuesta2|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.respuesta3|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.respuesta4|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form.respuesta_correcta|as_crispy_field }}
+                    </div>
+
+                    {{ form.ayuda|as_crispy_field }}
+
+                    <button type="submit" name="action" value="crear" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    {% endblock %}
