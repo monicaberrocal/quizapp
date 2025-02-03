@@ -3,7 +3,6 @@ from celery import Celery
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testapp.settings")
 
-celery_app = Celery("quiz")
+celery_app = Celery("testapp")
 celery_app.config_from_object("django.conf:settings", namespace="CELERY")
-
 celery_app.autodiscover_tasks()
