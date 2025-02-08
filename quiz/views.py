@@ -907,11 +907,16 @@ def extraer_texto_doc(file):
 from django.http import JsonResponse
 from utils.openai_utils import generate_questions
 
+from django.http import JsonResponse
+from quiz.tasks import tarea_pesada  # Importa la tarea de Celery
+
 def pruebas(request):
-    try:
-        instructions = "He usado 5 librerías para extraer el texto de un pdf. Los 5 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 5 extracciones. No escribas nada más que el texto limpio final."
-        theme_text = "Texto 1:"
-        result = generate_questions(theme_text, instructions)
-        return JsonResponse({"result": result})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    tarea_pesada.delay()  # Ejecuta la tarea en segundo plano con Celery
+    return JsonResponse({"message": "Tarea iniciada en segundo plano."})
+    # try:
+    #     instructions = "He usado 5 librerías para extraer el texto de un pdf. Los 5 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 5 extracciones. No escribas nada más que el texto limpio final."
+    #     theme_text = "Texto 1:"
+    #     result = generate_questions(theme_text, instructions)
+    #     return JsonResponse({"result": result})
+    # except Exception as e:
+    #     return JsonResponse({"error": str(e)}, status=500)

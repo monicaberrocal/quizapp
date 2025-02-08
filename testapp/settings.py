@@ -153,6 +153,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://gemastudies.up.railway.app",  # Agrega tu dominio de Railway aquí
 ]
 
-CELERY_BROKER_URL = config("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = config("REDIS_URL")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
