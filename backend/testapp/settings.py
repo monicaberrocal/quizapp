@@ -29,6 +29,8 @@ OPENAI_API_KEY = config('OPENAI_API_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [s.strip() for s in v.split(',')])
+CORS_ALLOWED_ORIGINS = [config('CORS_ALLOWED_ORIGINS')]
+
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -186,9 +188,6 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
 
 CORS_ALLOW_CREDENTIALS = True
 
