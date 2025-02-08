@@ -106,6 +106,42 @@ class ImportFileForm(forms.Form):
     file = forms.FileField()
 
 class RegistroUsuarioForm(UserCreationForm):
+    password1 = forms.CharField(
+        label="Contraseña",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Introduce tu contraseña"}),
+    )
+    password2 = forms.CharField(
+        label="Confirmar Contraseña",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Repite tu contraseña"}),
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2']
+        fields = ["username", "first_name", "last_name", "email"]
+        labels = {
+            "username": "Nombre de Usuario",
+            "first_name": "Nombre",
+            "last_name": "Apellido",
+            "email": "Correo Electrónico",
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control", "placeholder": "Elige un nombre de usuario"}),
+            "first_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Tu nombre"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Tu apellido"}),
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Tu email"}),
+        }
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])  # Encripta la contraseña
+        user.is_active = False  # Usuario inactivo hasta que confirme su email
+        if commit:
+            user.save()
+        return user

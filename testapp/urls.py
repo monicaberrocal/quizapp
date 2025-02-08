@@ -16,11 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from quiz.views import homepage
 
 urlpatterns = [
-    path('', homepage, name='homepage'),
-    path('quiz/', homepage, name='homepage'),
     path('admin/', admin.site.urls),
     path('quiz/', include('quiz.urls')),
+    path('api/', include('quiz.api_urls')),
 ]

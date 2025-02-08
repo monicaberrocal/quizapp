@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+from django.utils.timezone import now, timedelta
 
 class Asignatura(models.Model):
     nombre = models.CharField(max_length=100)
@@ -32,3 +34,12 @@ class Respuesta(models.Model):
 
     def __str__(self):
         return self.texto
+    
+def default_expiration():
+    return now() + timedelta(minutes=10)
+
+class CodigoActivacion(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name="codigo_activacion")
+    token_activacion = models.UUIDField(default=uuid.uuid4, unique=True)
+    token_expira = models.DateTimeField(default=default_expiration)
+

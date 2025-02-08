@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>⚠️ Enlace Expirado</h2>
+    <p>Tu enlace de activación ha caducado. Regístrate de nuevo para recibir un nuevo correo de activación.</p>
+    <a href="{% url 'registrar_usuario' %}" class="btn btn-warning mt-3">Volver a Registrarse</a>
+</div>
+{% endblock %}

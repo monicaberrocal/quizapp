@@ -1,7 +1,14 @@
 import json
+import uuid
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now
+from django.template.loader import render_to_string
+from django.templatetags.static import static
+from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (
     AsignaturaForm,
@@ -12,7 +19,7 @@ from .forms import (
     TemaForm,
     TemaFormWithoutAsignatura,
 )
-from .models import Asignatura, Pregunta, Respuesta, Tema
+from .models import Asignatura, Pregunta, Respuesta, Tema, CodigoActivacion
 from utils.openai_utils import generate_questions
 import fitz
 import pdfplumber
@@ -23,14 +30,64 @@ def homepage(request):
     return render(request, 'quiz/homepage.html')
 
 def registrar_usuario(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            usuario = form.save()
+
+            activacion = CodigoActivacion.objects.get(usuario=usuario)
+            token = activacion.token_activacion
+
+            link_activacion = request.build_absolute_uri(f"/quiz/activar/{token}/")
+
+            send_activation_email(request, usuario, link_activacion)
+
+            return render(request, "quiz/registro/registro_exitoso.html", {"email": usuario.email})
     else:
         form = RegistroUsuarioForm()
-    return render(request, 'quiz/registrar.html', {'form': form})
+
+    return render(request, "quiz/registro/signup.html", {"form": form})
+
+def send_activation_email(request, usuario, link_activacion):
+    html_content = render_to_string("quiz/registro/email/activacion.html", {
+        "usuario": usuario,
+        "link_activacion": link_activacion,
+    })
+
+    subject = "🔐 Activa tu cuenta en nuestra plataforma"
+
+    send_email(request, subject, html_content, [usuario.email])
+
+def send_email(request, subject, html_content, destinataries):
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=strip_tags(html_content),
+        from_email="gemastudiesapp@gmail.com",
+        to=destinataries,
+    )
+    email.attach_alternative(html_content, "text/html")
+    email.send()
+
+def activar_cuenta(request, token):
+    activacion = get_object_or_404(CodigoActivacion, token_activacion=token)
+
+    if activacion.token_expira < now():
+        usuario = activacion.usuario
+        activacion.delete()
+        usuario.delete()
+        return render(request, "quiz/registro/activacion_expirada.html")
+
+    usuario = activacion.usuario
+    usuario.is_active = True
+    usuario.save()
+
+    activacion.delete()
+
+    login(request, usuario)
+
+    return redirect('homepage')
+
 
 ### ASIGNATURA ###
 
@@ -520,7 +577,7 @@ def finalizar_test(request):
     request.session.pop('respuestas_correctas', None)
     request.session.pop('total_respondidas', None)
 
-    return render(request, 'quiz/finalizar_test.html', {
+    return render(request, 'quiz/test/finalizar_test.html', {
         'total_respondidas': total_respondidas,
         'respuestas_correctas': respuestas_correctas,
         'fallos': fallos,
@@ -920,3 +977,24 @@ def pruebas(request):
     #     return JsonResponse({"result": result})
     # except Exception as e:
     #     return JsonResponse({"error": str(e)}, status=500)
+
+
+
+##################
+#######API########
+##################
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .serializers import RegistroUsuarioSerializer
+
+@api_view(["POST"])
+def registrar_usuario_api(request):
+    serializer = RegistroUsuarioSerializer(data=request.data, context={"request": request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Registro exitoso. Revisa tu correo para activar la cuenta."}, status=status.HTTP_201_CREATED)
+    
+    print("Errores de validación:", serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
