@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 const Logout = () => {
@@ -9,7 +9,7 @@ const Logout = () => {
 
   const handleLogout = async () => {
     try {
-        await axios.get(`${import.meta.env.VITE_API_BASE_URL}logout/`, { withCredentials: true });
+        await api.get("logout/", { withCredentials: true });
 
       // 🔹 Borrar la sesión en React
       setIsAuthenticated(false);

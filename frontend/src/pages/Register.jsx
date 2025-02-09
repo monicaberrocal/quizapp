@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}registro/`, formData);
+      await api.post(`registro/`, formData);
       navigate("/register-success", { state: { email: formData.email } });
     } catch (error) {
       if (error.response && error.response.data) {

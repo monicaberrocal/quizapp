@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 
 export const AuthContext = createContext();
 
@@ -14,9 +14,7 @@ export const AuthProvider = ({ children }) => {
     // 🔹 2️⃣ Luego, verifica con Django si el usuario sigue autenticado
     const checkAuth = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}auth/status/`, {
-          withCredentials: true, // Enviar cookies de sesión
-        });
+        const response = await api.get("auth/status/", { withCredentials: true });
         
         setIsAuthenticated(response.data.authenticated); // Actualiza el estado global
         setUsername(response.data.username || "");

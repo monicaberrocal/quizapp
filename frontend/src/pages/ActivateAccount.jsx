@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 const ActivateAccount = () => {
@@ -13,7 +13,7 @@ const ActivateAccount = () => {
   useEffect(() => {
     const activateAccount = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}activar/${token}/`, {}, { withCredentials: true });
+        const response = await api.post(`activar/${token}/`, {}, { withCredentials: true });
 
         setMessage(response.data.message);
         setIsAuthenticated(true);

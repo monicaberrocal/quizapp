@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
@@ -22,7 +22,7 @@ const Login = () => {
     setLoading(true);  
 
     try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}login/`, formData, { withCredentials: true });
+        const response = await api.post(`login/`, formData, { withCredentials: true });
     
         setIsAuthenticated(true);
         setUsername(response.data.username);

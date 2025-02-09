@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;  // 🔹 Acceder a la URL de la API
-const NOMBRE_APP = import.meta.env.NOMBRE_APP;  // 🔹 Acceder a la constante definida en vite.config.js
-
+import api from "../api";
 
 const Asignaturas = () => {
   const [asignaturas, setAsignaturas] = useState([]);
@@ -15,13 +11,13 @@ const Asignaturas = () => {
   const [asignaturaAEliminar, setAsignaturaAEliminar] = useState(null);
 
   useEffect(() => {
-    console.log("API Base URL:", API_BASE_URL);
-    console.log("Nombre de la App:", NOMBRE_APP);
+    fetchAsignaturas();
+    fetchCsrfToken();
   }, []);
 
   const fetchAsignaturas = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}asignaturas/`, { withCredentials: true });
+      const response = await api.get("asignaturas/", { withCredentials: true });
       setAsignaturas(response.data);
     } catch (error) {
       setError("Error al cargar asignaturas.");
@@ -32,7 +28,7 @@ const Asignaturas = () => {
 
   const fetchCsrfToken = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}csrf/`, { withCredentials: true });
+      const response = await api.get(`csrf/`, { withCredentials: true });
       setCsrfToken(response.data.csrfToken);
     } catch (error) {
       console.error("Error obteniendo CSRF Token", error);
@@ -44,8 +40,8 @@ const Asignaturas = () => {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}asignaturas/`,
+      const response = await api.post(
+        `asignaturas/`,
         { nombre },
         {
           headers: {
@@ -73,7 +69,7 @@ const Asignaturas = () => {
     if (!asignaturaAEliminar) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}asignaturas/${asignaturaAEliminar.id}/`, {
+      await api.delete(`asignaturas/${asignaturaAEliminar.id}/`, {
         headers: {
           "X-CSRFToken": csrfToken,
         },
