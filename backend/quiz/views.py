@@ -1022,21 +1022,21 @@ def logout_api(request):
     response.delete_cookie("sessionid")
     return response
 
-# @api_view(["POST"])
-# def login_api(request):
-#     username = request.data.get("username")
-#     password = request.data.get("password")
+@api_view(["POST"])
+def login_api(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
 
-#     if not username or not password:
-#         return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
+    if not username or not password:
+        return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
 
-#     user = authenticate(username=username, password=password)
+    user = authenticate(username=username, password=password)
 
-#     if user is not None:
-#         login(request, user)
-#         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
-#     else:
-#         return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
+    if user is not None:
+        login(request, user)
+        return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+    else:
+        return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
     
 # @api_view(["POST"])
 # def login_api(request):
@@ -1057,13 +1057,6 @@ def logout_api(request):
 #     else:
 #         print("❌ Error: Credenciales incorrectas.")  # 📌 Ver si la autenticación falló
 #         return Response({"error": "Credenciales incorrectas."}, status=401)
-
-def login_api(request):
-    response = JsonResponse({"message": "Test CORS"})
-    response["Access-Control-Allow-Origin"] = "https://gemastudies.up.railway.app"
-    response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response["Access-Control-Allow-Headers"] = "Origin, Content-Type, Accept, Authorization"
-    return response
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
