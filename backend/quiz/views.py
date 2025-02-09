@@ -1023,11 +1023,30 @@ def logout_api(request):
     return response
 
 @api_view(["POST"])
+# def login_api(request):
+#     username = request.data.get("username")
+#     password = request.data.get("password")
+
+#     if not username or not password:
+#         return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
+
+#     user = authenticate(username=username, password=password)
+
+#     if user is not None:
+#         login(request, user)
+#         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+#     else:
+#         return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
+    
+@api_view(["POST"])
 def login_api(request):
+    print("🔹 Datos recibidos en login:", request.data)  # 📌 Imprimir los datos enviados por React
+
     username = request.data.get("username")
     password = request.data.get("password")
 
     if not username or not password:
+        print("❌ Error: Faltan datos en la solicitud.")  # 📌 Ver si faltan datos
         return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
 
     user = authenticate(username=username, password=password)
@@ -1036,7 +1055,9 @@ def login_api(request):
         login(request, user)
         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
     else:
-        return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
+        print("❌ Error: Credenciales incorrectas.")  # 📌 Ver si la autenticación falló
+        return Response({"error": "Credenciales incorrectas."}, status=401)
+
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
