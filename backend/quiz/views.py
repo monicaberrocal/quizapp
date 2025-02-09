@@ -1036,7 +1036,7 @@ def login_api(request):
         login(request, user)
         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
     else:
-        return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)  # 🔹 Mensaje más claro
+        return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
