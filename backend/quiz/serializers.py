@@ -4,6 +4,14 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from .models import CodigoActivacion
+from .utils import send_activation_email
+from rest_framework import serializers
+from .models import Asignatura
+
+import os
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")  # 🔹 Variable de entorno para la URL de React
+
 
 class PreguntaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,33 +29,37 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        # Validar que las contraseñas coincidan
         if data["password"] != data["password2"]:
             raise serializers.ValidationError({"password2": "Las contraseñas no coinciden."})
 
         try:
-            validate_password(data["password"])  # Validar seguridad de la contraseña
+            validate_password(data["password"])
         except serializers.ValidationError as e:
-            raise serializers.ValidationError({"password": e.detail})  # 🔹 Capturar errores en "password"
+            raise serializers.ValidationError({"password": e.detail})
 
         return data
 
     def create(self, validated_data):
-        validated_data.pop("password2")  # No necesitamos almacenar la confirmación
+        validated_data.pop("password2")
 
         usuario = User.objects.create_user(**validated_data)
 
-        # Obtener el código de activación
         activacion = CodigoActivacion.objects.get(usuario=usuario)
         token = activacion.token_activacion
 
-        # Construir el enlace de activación
         request = self.context.get("request")
-        link_activacion = request.build_absolute_uri(f"/quiz/activar/{token}/")
+        link_activacion = f"{FRONTEND_URL}/activar/{token}"
 
-        # Enviar correo de activación
-        # from .utils import send_activation_email
-        # send_activation_email(request, usuario, link_activacion)
+        send_activation_email(request, usuario, link_activacion)
 
         return usuario
+
+class AsignaturaSerializer(serializers.ModelSerializer):
+    tiene_preguntas = serializers.BooleanField(read_only=True)
+    tiene_fallos = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Asignatura
+        fields = ["id", "nombre", "tiene_preguntas", "tiene_fallos"]
+
 

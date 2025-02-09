@@ -2,13 +2,13 @@ import json
 import uuid
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail, EmailMultiAlternatives
+
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
-from django.template.loader import render_to_string
+
 from django.templatetags.static import static
-from django.utils.html import strip_tags
+
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (
     AsignaturaForm,
@@ -28,46 +28,6 @@ import os
 
 def homepage(request):
     return render(request, 'quiz/homepage.html')
-
-def registrar_usuario(request):
-    if request.method == "POST":
-        form = RegistroUsuarioForm(request.POST)
-        if form.is_valid():
-            usuario = form.save()
-
-            activacion = CodigoActivacion.objects.get(usuario=usuario)
-            token = activacion.token_activacion
-
-            link_activacion = request.build_absolute_uri(f"/quiz/activar/{token}/")
-
-            send_activation_email(request, usuario, link_activacion)
-
-            return render(request, "quiz/registro/registro_exitoso.html", {"email": usuario.email})
-    else:
-        form = RegistroUsuarioForm()
-
-    return render(request, "quiz/registro/signup.html", {"form": form})
-
-def send_activation_email(request, usuario, link_activacion):
-    html_content = render_to_string("quiz/registro/email/activacion.html", {
-        "usuario": usuario,
-        "link_activacion": link_activacion,
-    })
-
-    subject = "🔐 Activa tu cuenta en nuestra plataforma"
-
-    send_email(request, subject, html_content, [usuario.email])
-
-def send_email(request, subject, html_content, destinataries):
-
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body=strip_tags(html_content),
-        from_email="gemastudiesapp@gmail.com",
-        to=destinataries,
-    )
-    email.attach_alternative(html_content, "text/html")
-    email.send()
 
 def activar_cuenta(request, token):
     activacion = get_object_or_404(CodigoActivacion, token_activacion=token)
@@ -986,8 +946,35 @@ def pruebas(request):
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .serializers import RegistroUsuarioSerializer
+from django.utils.timezone import now
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import login
+from rest_framework import status
+from .models import CodigoActivacion
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth import logout
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import authenticate, login
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Asignatura
+from .serializers import AsignaturaSerializer
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 @api_view(["POST"])
 def registrar_usuario_api(request):
@@ -998,3 +985,97 @@ def registrar_usuario_api(request):
     
     print("Errores de validación:", serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+def activar_cuenta_api(request, token):
+    activacion = get_object_or_404(CodigoActivacion, token_activacion=token)
+
+    if activacion.token_expira < now():
+        usuario = activacion.usuario
+        activacion.delete()
+        usuario.delete()
+        return Response({"error": "El enlace de activación ha expirado."}, status=status.HTTP_400_BAD_REQUEST)
+
+    usuario = activacion.usuario
+    usuario.is_active = True
+    usuario.save()
+    activacion.delete()
+    
+    login(request, usuario)
+
+    return Response({
+        "message": "Cuenta activada correctamente.",
+        "username": usuario.username
+    }, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+def auth_status(request):
+    return Response({
+        "authenticated": request.user.is_authenticated,
+        "username": request.user.username if request.user.is_authenticated else None
+    })
+
+@api_view(["GET"])
+def logout_api(request):
+    logout(request)
+    response = Response({"message": "Sesión cerrada correctamente."})
+    response.delete_cookie("sessionid")
+    return response
+
+@api_view(["POST"])
+def login_api(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    if not username or not password:
+        return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        login(request, user)
+        return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+    else:
+        return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)  # 🔹 Mensaje más claro
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def asignatura_api(request):
+    if request.method == "GET":
+        asignaturas = Asignatura.objects.filter(usuario=request.user)
+        for asignatura in asignaturas:
+            asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
+            asignatura.tiene_fallos = asignatura.temas.filter(preguntas__fallos__gt=0).exists()
+
+        serializer = AsignaturaSerializer(asignaturas, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = AsignaturaSerializer(data=request.data)
+        if serializer.is_valid():
+            asignatura = serializer.save(usuario=request.user)
+            return Response(AsignaturaSerializer(asignatura).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def eliminar_asignatura(request, asignatura_id):
+    try:
+        asignatura = Asignatura.objects.get(id=asignatura_id, usuario=request.user)
+        asignatura.delete()
+        return Response({"message": "Asignatura eliminada correctamente."}, status=status.HTTP_204_NO_CONTENT)
+    except Asignatura.DoesNotExist:
+        return Response({"error": "Asignatura no encontrada o no tienes permiso."}, status=status.HTTP_404_NOT_FOUND)
+
+    
+@api_view(["GET"])
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    response = JsonResponse({"csrfToken": csrf_token})
+    
+    response.set_cookie(
+        "csrftoken",
+        csrf_token
+    )
+
+    return response

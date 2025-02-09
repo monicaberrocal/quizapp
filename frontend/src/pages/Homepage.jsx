@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/img/logo_completo.png";
 
 const Homepage = () => {
-  const isAuthenticated = false;
+  const { isAuthenticated } = useContext(AuthContext);
 
   return (
     <div className="container mt-5">

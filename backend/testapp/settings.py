@@ -171,8 +171,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://gemastudies.up.railway.app",  # Agrega tu dominio de Railway aquí
+    config("CSRF_TRUSTED_ORIGINS")
 ]
+
 
 CELERY_BROKER_URL = config("REDIS_URL")
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -188,7 +189,9 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
-CORS_ALLOW_CREDENTIALS = True
-
 LANGUAGE_CODE = "es"
+
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False

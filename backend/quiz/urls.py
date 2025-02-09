@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import crear_pregunta_con_respuestas, asignatura_crear, tema_crear, editar_asignatura, editar_tema, exportar_asignatura, exportar_asignaturas, exportar_tema, finalizar_test, pregunta_mostrar, respuesta_mostrar, procesar_respuesta, registrar_usuario, vista_asignatura, eliminar_asignatura, vista_tema, eliminar_tema, eliminar_tema_asignatura, pregunta_vista, eliminar_pregunta, estudiar_asignatura, repasar_asignatura, estudiar_tema, repasar_tema, pruebas
+from .views import crear_pregunta_con_respuestas, asignatura_crear, tema_crear, editar_asignatura, editar_tema, exportar_asignatura, exportar_asignaturas, exportar_tema, finalizar_test, pregunta_mostrar, respuesta_mostrar, procesar_respuesta, vista_asignatura, eliminar_asignatura, vista_tema, eliminar_tema, eliminar_tema_asignatura, pregunta_vista, eliminar_pregunta, estudiar_asignatura, repasar_asignatura, estudiar_tema, repasar_tema, pruebas
 from django.conf.urls import handler404, handler403
 from .views import mi_error_404, mi_error_403, activar_cuenta
 
@@ -11,7 +11,6 @@ urlpatterns = [
     path('crear-pregunta/', crear_pregunta_con_respuestas, name='crear_pregunta_con_respuestas'),
     path('crear-asignatura/', asignatura_crear, name='asignatura_crear'),
     path('crear-tema/', tema_crear, name='tema_crear'),
-    path('registrar/', registrar_usuario, name='registrar_usuario'),
     path('login/', auth_views.LoginView.as_view(template_name='quiz/registro/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('asignatura/<int:id>/', vista_asignatura, name='vista_asignatura'),

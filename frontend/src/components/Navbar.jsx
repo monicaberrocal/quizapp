@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/img/logo_reducido.png";
+import Logout from "./Logout";
 
 const Navbar = () => {
-  const isAuthenticated = false;
-  const username = "Usuario";
+  const { isAuthenticated, username } = useContext(AuthContext);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light">
@@ -36,7 +37,9 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 <span className="navbar-text">Hola, {username}!</span>
-                <Link className="nav-item nav-link btn my-btn" to="/logout">Cerrar sesión</Link>
+                <div className="ms-3">
+                  <Logout />
+                </div>
               </>
             ) : (
               <>

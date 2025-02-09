@@ -28,7 +28,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/registro/`, formData);
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}registro/`, formData);
       navigate("/register-success", { state: { email: formData.email } });
     } catch (error) {
       if (error.response && error.response.data) {
