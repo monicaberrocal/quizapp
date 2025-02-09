@@ -16,12 +16,14 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log('hola desde login')
     e.preventDefault();
     setMessage("");
     setErrors({});
     setLoading(true);  
 
     try {
+        
         console.log(api.defaults.baseURL);
         const response = await api.post(`login/`, formData, { withCredentials: true });
     
