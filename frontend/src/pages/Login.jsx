@@ -22,6 +22,7 @@ const Login = () => {
     setLoading(true);  
 
     try {
+        console.log(api.defaults.baseURL);
         const response = await api.post(`login/`, formData, { withCredentials: true });
     
         setIsAuthenticated(true);
