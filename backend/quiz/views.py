@@ -1022,7 +1022,7 @@ def logout_api(request):
     response.delete_cookie("sessionid")
     return response
 
-@api_view(["POST"])
+# @api_view(["POST"])
 # def login_api(request):
 #     username = request.data.get("username")
 #     password = request.data.get("password")
