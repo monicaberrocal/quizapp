@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;  // 🔹 Acceder a la URL de la API
+const NOMBRE_APP = import.meta.env.NOMBRE_APP;  // 🔹 Acceder a la constante definida en vite.config.js
+
+
 const Asignaturas = () => {
   const [asignaturas, setAsignaturas] = useState([]);
   const [nombre, setNombre] = useState("");
@@ -11,8 +15,8 @@ const Asignaturas = () => {
   const [asignaturaAEliminar, setAsignaturaAEliminar] = useState(null);
 
   useEffect(() => {
-    fetchAsignaturas();
-    fetchCsrfToken();
+    console.log("API Base URL:", API_BASE_URL);
+    console.log("Nombre de la App:", NOMBRE_APP);
   }, []);
 
   const fetchAsignaturas = async () => {
