@@ -7,6 +7,8 @@ from .models import CodigoActivacion
 from .utils import send_activation_email
 from .models import Asignatura
 from .models import Tema
+from rest_framework import serializers
+from .models import Tema, Pregunta
 
 import os
 
@@ -62,10 +64,16 @@ class AsignaturaSerializer(serializers.ModelSerializer):
         model = Asignatura
         fields = ["id", "nombre", "tiene_preguntas", "tiene_fallos"]
 
+class PreguntaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pregunta
+        fields = ["id", "texto", "respuesta_correcta"]
+
 class TemaSerializer(serializers.ModelSerializer):
-    asignatura_nombre = serializers.CharField(source="asignatura.nombre", read_only=True)
+    preguntas = PreguntaSerializer(many=True, read_only=True)
 
     class Meta:
         model = Tema
-        fields = ["id", "nombre", "asignatura_nombre"]
+        fields = ["id", "nombre", "preguntas"]
+
 

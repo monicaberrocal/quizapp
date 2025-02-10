@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import registrar_usuario_api, activar_cuenta_api, auth_status, logout_api, login_api, asignatura_api, get_csrf_token, eliminar_asignatura, eliminar_tema
+from .views import registrar_usuario_api, activar_cuenta_api, auth_status, logout_api, login_api, asignatura_api, get_csrf_token, eliminar_asignatura, eliminar_tema, tema_api
 
 urlpatterns = [
     path("registro/", registrar_usuario_api, name="registro_usuario_api"),
@@ -11,4 +11,5 @@ urlpatterns = [
     path("csrf/", get_csrf_token, name="csrf_token"),
     path("asignaturas/<int:asignatura_id>/", eliminar_asignatura, name="eliminar_asignatura"),
     path("temas/<int:tema_id>/", eliminar_tema, name="eliminar_tema"),
+    path("temas/", tema_api, name="tema_api"),
 ]

@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import RegisterSuccess from "./pages/RegisterSuccess";
 import ActivateAccount from "./pages/ActivateAccount";
 import Login from "./pages/Login";
+// import Asignaturas from "./pages/Asignaturas-borrar";
 import Asignaturas from "./pages/Asignaturas";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/activar/:token" element={<ActivateAccount />} />
         <Route path="/login" element={<Login />} />
         <Route path="/asignaturas" element={<Asignaturas />} />
+        {/* <Route path="/temas" element={<Temas />} /> */}
       </Routes>
     </Layout>
   );

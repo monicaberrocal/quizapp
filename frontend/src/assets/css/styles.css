@@ -325,3 +325,8 @@ a[aria-expanded="true"] .chevron-icon {
 .modal-title {
     font-weight: bold;
 }
+
+.accordeon {
+    --bs-accordion-active-color: var(--rosa-claro);
+    --bs-accordion-active-bg: var(--naranja-quemado-oscuro);
+}
