@@ -26,62 +26,8 @@ import pdfplumber
 import docx
 import os
 
-def homepage(request):
-    return render(request, 'quiz/homepage.html')
-
-def activar_cuenta(request, token):
-    activacion = get_object_or_404(CodigoActivacion, token_activacion=token)
-
-    if activacion.token_expira < now():
-        usuario = activacion.usuario
-        activacion.delete()
-        usuario.delete()
-        return render(request, "quiz/registro/activacion_expirada.html")
-
-    usuario = activacion.usuario
-    usuario.is_active = True
-    usuario.save()
-
-    activacion.delete()
-
-    login(request, usuario)
-
-    return redirect('homepage')
-
 
 ### ASIGNATURA ###
-
-@login_required
-def asignatura_crear(request):
-    if request.method == 'POST':
-        if 'file' in request.FILES:
-            form_file = ImportFileForm(request.POST, request.FILES)
-            if form_file.is_valid():
-                return importar_asignaturas(request.FILES['file'], request.user)
-        else:
-            form = AsignaturaForm(request.POST)
-            if form.is_valid():
-                asignatura = form.save(commit=False)
-                asignatura.usuario = request.user
-                asignatura.save()
-                return redirect('asignatura_crear')
-    else:
-        form = AsignaturaForm()
-
-    asignaturas = Asignatura.objects.filter(usuario=request.user)
-
-    asignaturas_con_preguntas_falladas = asignaturas.filter(
-        temas__preguntas__fallos__gt=0
-    )
-
-    for asignatura in asignaturas:
-        asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
-        asignatura.tiene_fallos = asignatura in asignaturas_con_preguntas_falladas
-    
-    return render(request, 'quiz/asignatura/asignatura_crear.html', {
-        'form': form,
-        'asignaturas': asignaturas
-    })
 
 @login_required
 def vista_asignatura(request, id):
@@ -195,32 +141,6 @@ def repasar_asignatura(request, id):
     return redirect('pregunta_mostrar')
 
 ### TEMA ###
-
-@login_required
-def tema_crear(request):
-    if request.method == 'POST':
-        form = TemaForm(request.POST, user=request.user)
-        if form.is_valid():
-            tema = form.save(commit=False)
-            if tema.asignatura.usuario != request.user:
-                return HttpResponseForbidden(render(request, '403.html'))
-            tema.save()
-            return redirect('tema_crear')
-    else:
-        form = TemaForm(user=request.user)
-
-    asignaturas = Asignatura.objects.filter(usuario=request.user).prefetch_related('temas')
-
-    temas_con_preguntas_falladas = Tema.objects.filter(
-        asignatura__in=asignaturas,
-        preguntas__fallos__gt=0
-    )
-
-    return render(request, 'quiz/tema/tema_crear.html', {
-        'form': form,
-        'asignaturas': asignaturas,
-        'temas_con_preguntas_falladas': temas_con_preguntas_falladas
-    })
 
 @login_required
 def vista_tema(request, id):
@@ -975,6 +895,18 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Tema, Asignatura
+from .serializers import TemaSerializer
+from collections import defaultdict
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Tema, Asignatura
+from .serializers import TemaSerializer
 
 @api_view(["POST"])
 def registrar_usuario_api(request):
@@ -1037,26 +969,6 @@ def login_api(request):
         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
     else:
         return Response({"error": "Nombre de usuario o contraseña incorrectos."}, status=401)
-    
-# @api_view(["POST"])
-# def login_api(request):
-#     print("🔹 Datos recibidos en login:", request.data)  # 📌 Imprimir los datos enviados por React
-
-#     username = request.data.get("username")
-#     password = request.data.get("password")
-
-#     if not username or not password:
-#         print("❌ Error: Faltan datos en la solicitud.")  # 📌 Ver si faltan datos
-#         return Response({"error": "El nombre de usuario y la contraseña son obligatorios."}, status=400)
-
-#     user = authenticate(username=username, password=password)
-
-#     if user is not None:
-#         login(request, user)
-#         return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
-#     else:
-#         print("❌ Error: Credenciales incorrectas.")  # 📌 Ver si la autenticación falló
-#         return Response({"error": "Credenciales incorrectas."}, status=401)
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -1077,6 +989,24 @@ def asignatura_api(request):
             return Response(AsignaturaSerializer(asignatura).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def tema_api(request):
+    asignaturas = Asignatura.objects.filter(usuario=request.user).prefetch_related("temas")
+
+    data = []
+    for asignatura in asignaturas:
+        temas = Tema.objects.filter(asignatura=asignatura)
+        temas_serializados = TemaSerializer(temas, many=True).data
+
+        data.append({
+            "asignatura": asignatura.nombre,
+            "temas": temas_serializados,
+        })
+
+    return Response(data)
+
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def eliminar_asignatura(request, asignatura_id):
@@ -1088,14 +1018,22 @@ def eliminar_asignatura(request, asignatura_id):
         return Response({"error": "Asignatura no encontrada o no tienes permiso."}, status=status.HTTP_404_NOT_FOUND)
 
     
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
 @api_view(["GET"])
 def get_csrf_token(request):
     csrf_token = get_token(request)
     response = JsonResponse({"csrfToken": csrf_token})
-    
+
     response.set_cookie(
         "csrftoken",
         csrf_token
     )
+
+    print('Cookie almacenada:', request.COOKIES.get('csrftoken'))
+    print("🔹 CSRF Token generado:", csrf_token)
 
     return response

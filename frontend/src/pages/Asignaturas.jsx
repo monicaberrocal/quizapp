@@ -28,12 +28,18 @@ const Asignaturas = () => {
 
   const fetchCsrfToken = async () => {
     try {
-      const response = await api.get(`csrf/`, { withCredentials: true });
+      const response = await api.get("csrf/", { withCredentials: true });
+  
       setCsrfToken(response.data.csrfToken);
+      console.log("🔹 CSRF Token recibido:", response.data.csrfToken);
+  
+      // 🔹 Verificar si la cookie CSRF se ha establecido correctamente
+      console.log("🔹 Cookies en el navegador:", document.cookie);
     } catch (error) {
-      console.error("Error obteniendo CSRF Token", error);
+      console.error("❌ Error obteniendo CSRF Token", error);
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,7 +102,7 @@ const Asignaturas = () => {
           <input
             type="text"
             className="form-control"
-            placeholder="Nombre de la asignatura"
+            placeholder="Crear asignatura..."
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
@@ -112,13 +118,12 @@ const Asignaturas = () => {
           {asignaturas.map((asignatura) => (
             <li key={asignatura.id} className="list-group-item d-flex justify-content-between align-items-center">
               {asignatura.nombre}
-              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteClick(asignatura)}>Eliminar</button>
+              <button className="btn btn-sm" onClick={() => handleDeleteClick(asignatura)}><i className="bi bi-trash3-fill i-orange"></i></button>
             </li>
           ))}
         </ul>
       )}
 
-      {/* 🔹 Modal de Confirmación Mejorado con el Nombre de la Asignatura */}
       {showModal && asignaturaAEliminar && (
         <div className="modal-backdrop">
           <div className="custom-modal">

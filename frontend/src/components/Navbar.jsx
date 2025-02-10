@@ -30,7 +30,7 @@ const Navbar = () => {
           {isAuthenticated && (
             <div className="navbar-nav ms-auto">
               <Link className="nav-item nav-link" to="/asignaturas">Asignaturas</Link>
-              <Link className="nav-item nav-link" to="/temas">Temas</Link>
+              {/* <Link className="nav-item nav-link" to="/temas">Temas</Link> */}
             </div>
           )}
           <div className="navbar-nav ms-auto">

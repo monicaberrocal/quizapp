@@ -37,9 +37,9 @@ const Homepage = () => {
             <Link className="btn btn-primary mx-2" to="/asignaturas">
               <h4>Mis asignaturas</h4>
             </Link>
-            <Link className="btn btn-primary mx-2" to="/temas">
+            {/* <Link className="btn btn-primary mx-2" to="/temas">
               <h4>Mis temas</h4>
-            </Link>
+            </Link> */}
           </>
         ) : (
           <>

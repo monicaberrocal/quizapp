@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from .models import CodigoActivacion
 from .utils import send_activation_email
-from rest_framework import serializers
 from .models import Asignatura
+from .models import Tema
 
 import os
 
@@ -62,4 +62,10 @@ class AsignaturaSerializer(serializers.ModelSerializer):
         model = Asignatura
         fields = ["id", "nombre", "tiene_preguntas", "tiene_fallos"]
 
+class TemaSerializer(serializers.ModelSerializer):
+    asignatura_nombre = serializers.CharField(source="asignatura.nombre", read_only=True)
+
+    class Meta:
+        model = Tema
+        fields = ["id", "nombre", "asignatura_nombre"]
 
