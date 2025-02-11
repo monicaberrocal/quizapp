@@ -92,8 +92,13 @@ class PreguntaSerializer(serializers.ModelSerializer):
 
         return pregunta
 
-class TemaSerializer(serializers.ModelSerializer):
+class TemaPreguntasSerializer(serializers.ModelSerializer):
     preguntas = PreguntaSerializer(many=True, read_only=True)
     class Meta:
         model = Tema
         fields = ["id", "nombre", "preguntas"]
+
+class TemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tema
+        fields = ["id", "nombre"]

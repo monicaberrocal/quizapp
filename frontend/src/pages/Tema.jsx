@@ -217,70 +217,77 @@ const TemaDetalle = () => {
               No hay preguntas en este tema.
             </p>
           ) : (
-<div className="accordion" id="accordionPreguntas">
-  {preguntas.map((pregunta, index) => (
-    <div className="accordion-item" key={pregunta.id}>
-      <h2 className="accordion-header" id={`heading${index}`}>
-        <button
-          className="accordion-button collapsed"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target={`#collapse${index}`}
-          aria-expanded="false"
-          aria-controls={`collapse${index}`}>
-          {pregunta.texto}
-        </button>
-      </h2>
-      <div
-        id={`collapse${index}`}
-        className="accordion-collapse collapse"
-        aria-labelledby={`heading${index}`}
-        data-bs-parent="#accordionPreguntas">
-        <div className="accordion-body">
-          <div className="row">
-            {/* 📌 Columna izquierda (Lista de respuestas) */}
-            <div className="col-md-6">
-              <ul className="list-group">
-                {pregunta.respuestas.map((respuesta) => (
-                  <li
-                    key={respuesta.id}
-                    className={`list-group-item ${
-                      respuesta.id === pregunta.respuesta_correcta_id
-                        ? "respuesta-correcta"
-                        : ""
-                    }`}>
-                    {respuesta.id === pregunta.respuesta_correcta_id && (
-                      <>
-                        <i className="bi bi-arrow-right-circle-fill"></i>&nbsp;&nbsp;
-                      </>
-                    )}
-                    {respuesta.texto}
-                  </li>
-                ))}
-              </ul>
+            <div className="accordion" id="accordionPreguntas">
+              {preguntas.map((pregunta, index) => (
+                <div className="accordion-item" key={pregunta.id}>
+                  <h2 className="accordion-header" id={`heading${index}`}>
+                    <button
+                      className="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#collapse${index}`}
+                      aria-expanded="false"
+                      aria-controls={`collapse${index}`}>
+                      {pregunta.texto}
+                    </button>
+                  </h2>
+                  <div
+                    id={`collapse${index}`}
+                    className="accordion-collapse collapse"
+                    aria-labelledby={`heading${index}`}
+                    data-bs-parent="#accordionPreguntas">
+                    <div className="accordion-body">
+                      <div className="row">
+                        {/* 📌 Columna izquierda (Lista de respuestas) */}
+                        <div className="col-md-6">
+                          <ul className="list-group">
+                            {pregunta.respuestas.map((respuesta) => (
+                              <li
+                                key={respuesta.id}
+                                className={`list-group-item ${
+                                  respuesta.id ===
+                                  pregunta.respuesta_correcta_id
+                                    ? "respuesta-correcta"
+                                    : ""
+                                }`}>
+                                {respuesta.id ===
+                                  pregunta.respuesta_correcta_id && (
+                                  <>
+                                    <i className="bi bi-arrow-right-circle-fill"></i>
+                                    &nbsp;&nbsp;
+                                  </>
+                                )}
+                                {respuesta.texto}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* 📌 Columna derecha (Ayuda + Estado de fallos) */}
+                        <div className="col-md-6 d-flex flex-column">
+                          {/* 🔹 Parte superior: Ayuda de la pregunta */}
+                          <div className="p-3 border bg-light">
+                            <h6 className="fw-bold">Ayuda:</h6>
+                            <p className="text-muted">
+                              {pregunta.ayuda || "No hay ayuda disponible"}
+                            </p>
+                          </div>
+
+                          {/* 🔹 Parte inferior: Estado de la pregunta (Correcto / Fallada) */}
+                          <div
+                            className={`p-3 mt-2 border ${pregunta.fallos > 0 ? "bg-danger text-white" : "bg-success text-white"}`}>
+                            <h6 className="fw-bold">Estado:</h6>
+                            <p>
+                              {pregunta.fallos > 0 ? "Fallada" : "Correcto"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {/* 📌 Columna derecha (Ayuda + Estado de fallos) */}
-            <div className="col-md-6 d-flex flex-column">
-              {/* 🔹 Parte superior: Ayuda de la pregunta */}
-              <div className="p-3 border bg-light">
-                <h6 className="fw-bold">Ayuda:</h6>
-                <p className="text-muted">{pregunta.ayuda || "No hay ayuda disponible"}</p>
-              </div>
-
-              {/* 🔹 Parte inferior: Estado de la pregunta (Correcto / Fallada) */}
-              <div className={`p-3 mt-2 border ${pregunta.fallos > 0 ? "bg-danger text-white" : "bg-success text-white"}`}>
-                <h6 className="fw-bold">Estado:</h6>
-                <p>{pregunta.fallos > 0 ? "Fallada" : "Correcto"}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
           )}
         </>
       )}

@@ -5,7 +5,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import PreguntaSerializer, RegistroUsuarioSerializer
+from .serializers import PreguntaSerializer, RegistroUsuarioSerializer, TemaPreguntasSerializer
 from django.utils.timezone import now
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -164,7 +164,7 @@ def tema_api(request, tema_id):
     if request.method == "GET":
         try:
             tema = Tema.objects.get(id=tema_id, asignatura__usuario=request.user)
-            return Response({"tema": TemaSerializer(tema).data}, status=200)
+            return Response({"tema": TemaPreguntasSerializer(tema).data}, status=200)
         except Tema.DoesNotExist:
             return Response({"error": "Tema no encontrado."}, status=404)
         
