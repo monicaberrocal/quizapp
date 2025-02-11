@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import InputField from "../components/InputField";
+import AlertMessage from "../components/AlertMessage";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -45,48 +47,65 @@ const Register = () => {
     <div className="container d-flex justify-content-center align-items-center">
       <div className="card shadow-lg p-4 rounded" style={{ maxWidth: "500px", width: "100%" }}>
         <h2 className="text-center h1 mb-3">Crear Cuenta</h2>
-        {message && <p className="alert alert-info text-center">{message}</p>}
+
+        <AlertMessage message={message} type="info" />
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-bold">Nombre de usuario</label>
-            <input type="text" name="username" className="form-control" value={formData.username} onChange={handleChange} required />
-            {errors.username && <p className="text-danger">{errors.username}</p>}
-          </div>
+          <InputField
+            label="Nombre de usuario"
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            error={errors.username}
+            className={"mb-3"}
+          />
 
           <div className="row">
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">Nombre</label>
-              <input type="text" name="first_name" className="form-control" value={formData.first_name} onChange={handleChange} required />
-            </div>
-
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">Apellido</label>
-              <input type="text" name="last_name" className="form-control" value={formData.last_name} onChange={handleChange} required />
-            </div>
+            <InputField
+            label="Nombre"
+            type="text"
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleChange}
+            className={"col-md-6 mb-3"}
+            />
+            <InputField
+            label="Apellido"
+            type="text"
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            className={"col-md-6 mb-3"}
+            />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Correo electrónico</label>
-            <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
-            {errors.email && <p className="text-danger">{errors.email}</p>}
-          </div>
+          <InputField
+            label="Correo electrónico"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            error={errors.email}
+          />
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Contraseña</label>
-            <input type="password" name="password" className="form-control" value={formData.password} onChange={handleChange} required />
-            {errors.password && (
-              <div className="text-danger">
-                {Array.isArray(errors.password) ? errors.password.map((err, index) => <p key={index}>{err}</p>) : <p>{errors.password}</p>}
-              </div>
-            )}
-          </div>
+          <InputField
+            label="Contraseña"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            error={errors.password}
+          />
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Confirmar Contraseña</label>
-            <input type="password" name="password2" className="form-control" value={formData.password2} onChange={handleChange} required />
-            {errors.password2 && errors.password2.map((err, index) => <p key={index} className="text-danger">{err}</p>)}
-          </div>
+          <InputField
+            label="Confirmar Contraseña"
+            type="password"
+            name="password2"
+            value={formData.password2}
+            onChange={handleChange}
+            error={errors.password2}
+          />
 
           {errors.non_field_errors && (
             <div className="text-danger text-center">

@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { AuthContext } from "../context/AuthContext";
+import AlertMessage from "../components/AlertMessage";
 
 const Login = () => {
   const { setIsAuthenticated, setUsername } = useContext(AuthContext);
@@ -26,8 +27,8 @@ const Login = () => {
     
         setIsAuthenticated(true);
         setUsername(response.data.username);
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("username", response.data.username);
+        setIsAuthenticated(true);
+        setUsername(response.data.username);
     
         navigate("/");
       } catch (error) {
@@ -51,7 +52,8 @@ const Login = () => {
     <div className="container d-flex justify-content-center align-items-center mt-5">
       <div className="card shadow-lg p-4 rounded" style={{ maxWidth: "400px", width: "100%" }}>
         <h2 className="text-center h1 mb-3">Iniciar Sesión</h2>
-        {message && <p className="alert alert-danger text-center">{message}</p>}
+
+        <AlertMessage message={message} type="danger" />
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">

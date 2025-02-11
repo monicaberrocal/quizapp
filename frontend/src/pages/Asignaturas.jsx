@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import Asignaturas from "./Asignaturas-borrar";
+import { Link } from "react-router-dom";
+import AlertMessage from "../components/AlertMessage";
 
 const Temas = () => {
   const [temasPorAsignatura, setTemasPorAsignatura] = useState([]);
@@ -21,7 +22,7 @@ const Temas = () => {
 
   const fetchTemas = async () => {
     try {
-      const response = await api.get("/temas/", { withCredentials: true });
+      const response = await api.get("/asignaturas/", { withCredentials: true });
       setTemasPorAsignatura(response.data);
     } catch (error) {
       setError("Error al cargar los temas.");
@@ -114,7 +115,7 @@ const Temas = () => {
       });
 
       // 🔹 Eliminar la asignatura de la lista en React
-      setTemasPorAsignatura(temasPorAsignatura.filter(a => a.asignatura !== asignaturaAEliminar.asignatura));
+      setTemasPorAsignatura(temasPorAsignatura.filter(a => a.id !== asignaturaAEliminar.id));
     } catch (error) {
       console.error("Error al eliminar la asignatura:", error.response?.data);
       setError("Error al eliminar la asignatura.");
@@ -128,7 +129,7 @@ const Temas = () => {
     <div className="container mt-5">
       <h2 className="text-center">Mis Asignaturas</h2>
 
-      {error && <p className="alert alert-danger text-center">{error}</p>}
+      <AlertMessage message={error} type="danger" />
 
       {/* Formulario para crear una nueva asignatura */}
       <form onSubmit={handleCreateAsignatura} className="mb-4">
@@ -189,7 +190,9 @@ const Temas = () => {
                       <ul className="list-group">
                         {asignatura.temas.map((tema) => (
                           <li key={tema.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            {tema.nombre}
+                            <Link to={`/temas/${tema.id}`} className="text-decoration-none">
+                              {tema.nombre}
+                            </Link>
                             <i
                               className="bi bi-trash3-fill i-orange"
                               style={{ cursor: "pointer", fontSize: "1.2rem" }}

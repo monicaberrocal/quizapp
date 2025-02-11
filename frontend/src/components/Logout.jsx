@@ -25,7 +25,7 @@ const Logout = () => {
   };
 
   return (
-    <button className="btn my-btn" onClick={handleLogout}>Cerrar Sesión</button>
+    <button className="nav-item nav-link btn my-btn" onClick={handleLogout}>Cerrar Sesión</button>
   );
 };
 

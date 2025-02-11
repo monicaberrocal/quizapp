@@ -8,17 +8,13 @@ from .utils import send_activation_email
 from .models import Asignatura
 from .models import Tema
 from rest_framework import serializers
-from .models import Tema, Pregunta
+from .models import Tema, Pregunta, Respuesta
+from rest_framework import serializers
+from .models import Pregunta, Respuesta, Tema
 
 import os
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")  # 🔹 Variable de entorno para la URL de React
-
-
-class PreguntaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Pregunta
-        fields = '__all__'
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True, label="Confirmar contraseña")
@@ -64,16 +60,40 @@ class AsignaturaSerializer(serializers.ModelSerializer):
         model = Asignatura
         fields = ["id", "nombre", "tiene_preguntas", "tiene_fallos"]
 
+class RespuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Respuesta
+        fields = ["id", "texto"]
+
 class PreguntaSerializer(serializers.ModelSerializer):
+    respuestas = RespuestaSerializer(many=True)
+
     class Meta:
         model = Pregunta
-        fields = ["id", "texto", "respuesta_correcta"]
+        fields = ["id", "tema", "texto", "ayuda", "respuestas", "respuesta_correcta_id"]
+
+    def validate(self, data):
+        if not (1 <= data["respuesta_correcta"] <= 4):
+            raise serializers.ValidationError({"respuesta_correcta": "El valor debe estar entre 1 y 4."})
+        return data
+
+    def create(self, validated_data):
+        respuestas_data = validated_data.pop("respuestas")
+        respuesta_correcta_index = validated_data.pop("respuesta_correcta") - 1
+        pregunta = Pregunta.objects.create(**validated_data)
+
+        respuestas = []
+        for respuesta_data in respuestas_data:
+            respuesta = Respuesta.objects.create(pregunta=pregunta, **respuesta_data)
+            respuestas.append(respuesta)
+
+        pregunta.respuesta_correcta = respuestas[respuesta_correcta_index]
+        pregunta.save()
+
+        return pregunta
 
 class TemaSerializer(serializers.ModelSerializer):
     preguntas = PreguntaSerializer(many=True, read_only=True)
-
     class Meta:
         model = Tema
         fields = ["id", "nombre", "preguntas"]
-
-

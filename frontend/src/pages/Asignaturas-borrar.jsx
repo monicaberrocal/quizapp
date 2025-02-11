@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
+import AlertMessage from "../components/AlertMessage";
 
 const Asignaturas = () => {
   const [asignaturas, setAsignaturas] = useState([]);
@@ -89,8 +90,8 @@ const Asignaturas = () => {
   return (
     <div className="container mt-5">
       <h2 className="text-center">Mis Asignaturas</h2>
-
-      {error && <p className="alert alert-danger text-center">{error}</p>}
+      
+      <AlertMessage message={error} type="danger" />
 
       <form onSubmit={handleSubmit} className="mb-4">
         <div className="input-group">

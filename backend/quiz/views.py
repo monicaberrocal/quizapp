@@ -5,14 +5,14 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import RegistroUsuarioSerializer
+from .serializers import PreguntaSerializer, RegistroUsuarioSerializer
 from django.utils.timezone import now
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login
 from rest_framework import status
-from .models import CodigoActivacion
+from .models import CodigoActivacion, Pregunta
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import logout
@@ -49,6 +49,16 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Tema
+from .serializers import TemaSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Tema
 
 @api_view(["POST"])
 def registrar_usuario_api(request):
@@ -114,15 +124,22 @@ def login_api(request):
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
-def asignatura_api(request):
+def asignaturas_api(request):
     if request.method == "GET":
-        asignaturas = Asignatura.objects.filter(usuario=request.user)
-        for asignatura in asignaturas:
-            asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
-            asignatura.tiene_fallos = asignatura.temas.filter(preguntas__fallos__gt=0).exists()
+        asignaturas = Asignatura.objects.filter(usuario=request.user).prefetch_related("temas")
 
-        serializer = AsignaturaSerializer(asignaturas, many=True)
-        return Response(serializer.data)
+        data = []
+        for asignatura in asignaturas:
+            temas = Tema.objects.filter(asignatura=asignatura)
+            temas_serializados = TemaSerializer(temas, many=True).data
+
+            data.append({
+                "asignatura": asignatura.nombre,
+                "id": asignatura.id,
+                "temas": temas_serializados,
+            })
+
+        return Response(data)
 
     elif request.method == "POST":
         serializer = AsignaturaSerializer(data=request.data)
@@ -131,25 +148,7 @@ def asignatura_api(request):
             return Response(AsignaturaSerializer(asignatura).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def tema_api(request):
-    asignaturas = Asignatura.objects.filter(usuario=request.user).prefetch_related("temas")
-
-    data = []
-    for asignatura in asignaturas:
-        temas = Tema.objects.filter(asignatura=asignatura)
-        temas_serializados = TemaSerializer(temas, many=True).data
-
-        data.append({
-            "asignatura": asignatura.nombre,
-            "id": asignatura.id,
-            "temas": temas_serializados,
-        })
-
-    return Response(data)
-
-@api_view(["DELETE"])
+@api_view(["GET", "DELETE"])
 @permission_classes([IsAuthenticated])
 def eliminar_asignatura(request, asignatura_id):
     try:
@@ -158,16 +157,41 @@ def eliminar_asignatura(request, asignatura_id):
         return Response({"message": "Asignatura eliminada correctamente."}, status=status.HTTP_204_NO_CONTENT)
     except Asignatura.DoesNotExist:
         return Response({"error": "Asignatura no encontrada o no tienes permiso."}, status=status.HTTP_404_NOT_FOUND)
-    
-@api_view(["DELETE"])
+
+@api_view(["GET", "DELETE"])
 @permission_classes([IsAuthenticated])
-def eliminar_tema(request, tema_id):
-    try:
-        tema = Tema.objects.get(id=tema_id, asignatura__usuario=request.user)
-        tema.delete()
-        return Response({"message": "Tema eliminado correctamente."}, status=status.HTTP_204_NO_CONTENT)
-    except Tema.DoesNotExist:
-        return Response({"error": "Tema no encontrado o no tienes permiso."}, status=status.HTTP_404_NOT_FOUND)
+def tema_api(request, tema_id):
+    if request.method == "GET":
+        try:
+            tema = Tema.objects.get(id=tema_id, asignatura__usuario=request.user)
+            return Response({"tema": TemaSerializer(tema).data}, status=200)
+        except Tema.DoesNotExist:
+            return Response({"error": "Tema no encontrado."}, status=404)
+        
+    elif request.method == "DELETE":
+        try:
+            tema = Tema.objects.get(id=tema_id, asignatura__usuario=request.user)
+            tema.delete()
+            return Response({"message": "Tema eliminado correctamente."}, status=status.HTTP_204_NO_CONTENT)
+        except Tema.DoesNotExist:
+            return Response({"error": "Tema no encontrado o no tienes permiso."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def crear_pregunta_api(request):
+    serializer = PreguntaSerializer(data=request.data)
+
+    if serializer.is_valid():
+        tema = serializer.validated_data["tema"]
+
+        if tema.asignatura.usuario != request.user:
+            return Response({"error": "No tienes permiso para agregar preguntas a este tema."}, status=status.HTTP_403_FORBIDDEN)
+
+        pregunta = serializer.save()
+        return Response(PreguntaSerializer(pregunta).data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(["GET"])
 def get_csrf_token(request):

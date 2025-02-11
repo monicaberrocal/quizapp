@@ -4,21 +4,19 @@ import api from "../api";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // 🔹 1️⃣ Primero intenta obtener `isAuthenticated` de localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem("isAuthenticated") === "true"
   );
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
 
   useEffect(() => {
-    // 🔹 2️⃣ Luego, verifica con Django si el usuario sigue autenticado
     const checkAuth = async () => {
       try {
         const response = await api.get("auth/status/", { withCredentials: true });
         
-        setIsAuthenticated(response.data.authenticated); // Actualiza el estado global
+        setIsAuthenticated(response.data.authenticated);
         setUsername(response.data.username || "");
-        localStorage.setItem("isAuthenticated", response.data.authenticated); // 🔹 Guardar en localStorage
+        localStorage.setItem("isAuthenticated", response.data.authenticated);
         localStorage.setItem("username", response.data.username || "");
       } catch (error) {
         setIsAuthenticated(false);
@@ -29,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuth();
-  }, []); // 🔹 Se ejecuta SOLO al cargar la app
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, username, setUsername }}>
