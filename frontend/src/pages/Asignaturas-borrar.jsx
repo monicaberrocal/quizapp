@@ -91,7 +91,7 @@ const Asignaturas = () => {
     <div className="container mt-5">
       <h2 className="text-center">Mis Asignaturas</h2>
       
-      <AlertMessage message={error} type="danger" />
+      {error && <AlertMessage message={error} setMessage={setError} type="danger" />}
 
       <form onSubmit={handleSubmit} className="mb-4">
         <div className="input-group">

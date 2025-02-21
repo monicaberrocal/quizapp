@@ -7,6 +7,9 @@ import ActivateAccount from "./pages/ActivateAccount";
 import Login from "./pages/Login";
 import Asignaturas from "./pages/Asignaturas";
 import Tema from "./pages/Tema"
+import Asignatura from "./pages/Asignatura"
+import Estudiar from "./pages/Estudiar";
+import FinalizarTest from "./pages/Finalizar";
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/asignaturas" element={<Asignaturas />} />
         <Route path="/temas/:temaId" element={<Tema />} />
+        <Route path="/asignaturas/:asignaturaId" element={<Asignatura />} />
+        <Route path="/cuestionario/:tipo/:filtro/:id" element={<Estudiar />} />
+        <Route path="/finalizar" element={<FinalizarTest />} />
       </Routes>
     </Layout>
   );

@@ -1,0 +1,31 @@
+{
+    "name": "Django",
+    "type": "python",
+    "request": "launch",
+    "stopOnEntry": false,
+    "pythonPath": "${config.python.pythonPath}",
+    "program": "${workspaceRoot}/manage.py",
+    "args": [
+        "runserver",
+        "--noreload"
+    ],
+    "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput",
+        "DjangoDebugging"
+    ],
+    "justMyCode": false,
+    "configurations": [
+        {
+            "name": "Python Debugger: Django",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true
+        }
+    ]
+}

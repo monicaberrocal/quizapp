@@ -48,7 +48,7 @@ const Register = () => {
       <div className="card shadow-lg p-4 rounded" style={{ maxWidth: "500px", width: "100%" }}>
         <h2 className="text-center h1 mb-3">Crear Cuenta</h2>
 
-        <AlertMessage message={message} type="info" />
+        {message && <AlertMessage message={message} setMessage={setMessage} type="info" />}
 
         <form onSubmit={handleSubmit}>
           <InputField

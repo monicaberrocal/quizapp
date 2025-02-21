@@ -22,7 +22,9 @@ const Temas = () => {
 
   const fetchTemas = async () => {
     try {
-      const response = await api.get("/asignaturas/", { withCredentials: true });
+      const response = await api.get("/asignaturas/", {
+        withCredentials: true,
+      });
       setTemasPorAsignatura(response.data);
     } catch (error) {
       setError("Error al cargar los temas.");
@@ -58,7 +60,10 @@ const Temas = () => {
       );
 
       // 🔹 Agregar la nueva asignatura con una lista vacía de temas
-      setTemasPorAsignatura([...temasPorAsignatura, { asignatura: response.data.nombre, id: response.data.id, temas: [] }]);
+      setTemasPorAsignatura([
+        ...temasPorAsignatura,
+        { asignatura: response.data.nombre, id: response.data.id, temas: [] },
+      ]);
       setNombreAsignatura("");
     } catch (error) {
       console.error("Error al crear asignatura:", error.response?.data);
@@ -91,7 +96,9 @@ const Temas = () => {
       setTemasPorAsignatura((prevTemas) =>
         prevTemas.map((asignatura) => ({
           ...asignatura,
-          temas: asignatura.temas.filter((tema) => tema.id !== temaAEliminar.id),
+          temas: asignatura.temas.filter(
+            (tema) => tema.id !== temaAEliminar.id
+          ),
         }))
       );
     } catch (error) {
@@ -115,7 +122,9 @@ const Temas = () => {
       });
 
       // 🔹 Eliminar la asignatura de la lista en React
-      setTemasPorAsignatura(temasPorAsignatura.filter(a => a.id !== asignaturaAEliminar.id));
+      setTemasPorAsignatura(
+        temasPorAsignatura.filter((a) => a.id !== asignaturaAEliminar.id)
+      );
     } catch (error) {
       console.error("Error al eliminar la asignatura:", error.response?.data);
       setError("Error al eliminar la asignatura.");
@@ -129,7 +138,9 @@ const Temas = () => {
     <div className="container mt-5">
       <h2 className="text-center">Mis Asignaturas</h2>
 
-      <AlertMessage message={error} type="danger" />
+      {error && (
+        <AlertMessage message={error} setMessage={setError} type="danger" />
+      )}
 
       {/* Formulario para crear una nueva asignatura */}
       <form onSubmit={handleCreateAsignatura} className="mb-4">
@@ -142,7 +153,9 @@ const Temas = () => {
             onChange={(e) => setNombreAsignatura(e.target.value)}
             required
           />
-          <button type="submit" className="btn btn-primary">Agregar</button>
+          <button type="submit" className="btn btn-primary">
+            Agregar
+          </button>
         </div>
       </form>
 
@@ -156,25 +169,83 @@ const Temas = () => {
             temasPorAsignatura.map((asignatura, index) => (
               <div className="accordion-item" key={index}>
                 <h2 className="accordion-header" id={`heading-${index}`}>
-                  <div className="d-flex justify-content-between align-items-center px-3">
+                  <div className="d-flex justify-content-between align-items-center">
                     <button
-                      className="accordion-button collapsed flex-grow-1 text-start"
+                      className="accordion-button collapsed"
                       type="button"
                       data-bs-toggle="collapse"
                       data-bs-target={`#collapse-${index}`}
                       aria-expanded="false"
                       aria-controls={`collapse-${index}`}
                     >
-                      {asignatura.asignatura}
+                      {asignatura.nombre}
                     </button>
-                    <i
-                      className="bi bi-trash3-fill i-orange"
-                      style={{ cursor: "pointer", fontSize: "1.2rem" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenAsignaturaModal(asignatura);
-                      }}
-                    ></i>
+                    <div className="d-flex align-items-center">
+                      {/* 📌 Botón de Estudiar */}
+                      {asignatura.tiene_preguntas ? (
+                        <Link
+                          to={`/cuestionario/estudiar/asignatura/${asignatura.id}`}
+                          className="btn i-menu i-orange"
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Tooltip on top"
+                        >
+                          <i className="bi bi-book-half"></i>
+                          {/* Estudiar */}
+                        </Link>
+                      ) : (
+                        <span className="btn i-menu i-orange invisible">
+                          <i className="bi bi-book-half"></i>
+                          {/* Estudiar */}
+                        </span>
+                      )}
+
+                      {/* 📌 Botón de Repasar */}
+                      {asignatura.tiene_fallos ? (
+                        <Link
+                          to={`/cuestionario/repasar/asignatura/${asignatura.id}`}
+                          className="btn i-menu i-orange"
+                          title="Repasar preguntas falladas"
+                          aria-label="Repasar preguntas falladas"
+                          data-bs-toggle="tooltip"
+                        >
+                          <i className="bi bi-reply-all-fill"></i>
+                          {/* Repasar */}
+                        </Link>
+                      ) : (
+                        <span className="btn i-menu i-orange invisible">
+                          <i className="bi bi-reply-all-fill"></i>
+                          {/* Repasar */}
+                        </span>
+                      )}
+
+                      {/* 📌 Botón de Ver Asignatura */}
+                      <Link
+                        to={`/asignaturas/${asignatura.id}`}
+                        className="btn i-menu i-orange"
+                        title="Ver detalles de la asignatura"
+                        aria-label="Ver detalles de la asignatura"
+                        data-bs-toggle="tooltip"
+                      >
+                        <i className="bi bi-eye-fill"></i>
+                        {/* Abrir */}
+                      </Link>
+
+                      {/* 📌 Botón de Eliminar */}
+                      <i
+                        className="bi bi-trash3-fill i-orange i-menu btn"
+                        style={{ cursor: "pointer", fontSize: "1.2rem" }}
+                        title="Eliminar asignatura"
+                        aria-label="Eliminar asignatura"
+                        data-bs-toggle="tooltip"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAsignaturaModal(asignatura);
+                        }}
+                      >
+                        {/* Eliminar */}
+                      </i>
+                    </div>
                   </div>
                 </h2>
                 <div
@@ -183,21 +254,76 @@ const Temas = () => {
                   aria-labelledby={`heading-${index}`}
                   data-bs-parent="#accordionTemas"
                 >
-                  <div className="accordion-body">
+                  <div className="accordion-body pr-100">
                     {asignatura.temas.length === 0 ? (
-                      <p className="text-muted text-center">No hay temas en esta asignatura.</p>
+                      <p className="text-muted text-center">
+                        No hay temas en esta asignatura.
+                      </p>
                     ) : (
                       <ul className="list-group">
                         {asignatura.temas.map((tema) => (
-                          <li key={tema.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <Link to={`/temas/${tema.id}`} className="text-decoration-none">
+                          <li
+                            key={tema.id}
+                            className="list-group-item p-0 hover-pink"
+                          >
+                            <Link
+                              to={`/temas/${tema.id}`}
+                              className="d-flex justify-content-between align-items-center text-decoration-none text-dark p-2 w-100"
+                            >
                               {tema.nombre}
                             </Link>
-                            <i
-                              className="bi bi-trash3-fill i-orange"
-                              style={{ cursor: "pointer", fontSize: "1.2rem" }}
-                              onClick={() => handleOpenTemaModal(tema)}
-                            ></i>
+                            <div>
+                              {/* 📌 Botón de Estudiar */}
+                              {tema.tiene_preguntas ? (
+                                <Link
+                                  to={`/cuestionario/estudiar/tema/${tema.id}`}
+                                  className="btn i-menu i-orange"
+                                  data-toggle="tooltip"
+                                  data-placement="top"
+                                  title="Tooltip on top"
+                                >
+                                  <i className="bi bi-book-half"></i>
+                                  {/* Estudiar */}
+                                </Link>
+                              ) : (
+                                <span className="btn i-menu i-orange invisible">
+                                  <i className="bi bi-book-half"></i>
+                                  {/* Estudiar */}
+                                </span>
+                              )}
+
+                              {/* 📌 Botón de Repasar */}
+                              {tema.tiene_fallos ? (
+                                <Link
+                                  to={`/cuestionario/repasar/tema/${asignatura.id}`}
+                                  className="btn i-menu i-orange"
+                                  title="Repasar preguntas falladas"
+                                  aria-label="Repasar preguntas falladas"
+                                  data-bs-toggle="tooltip"
+                                >
+                                  <i className="bi bi-reply-all-fill"></i>
+                                  {/* Repasar */}
+                                </Link>
+                              ) : (
+                                <span className="btn i-menu i-orange invisible">
+                                  <i className="bi bi-reply-all-fill"></i>
+                                  {/* Repasar */}
+                                </span>
+                              )}
+                              <i
+                                className="bi bi-trash3-fill i-orange i-menu-sm btn"
+                                style={{
+                                  cursor: "pointer",
+                                  fontSize: "1.2rem",
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleOpenTemaModal(tema);
+                                }}
+                              >
+                                {/* Eliminar */}
+                              </i>
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -215,19 +341,37 @@ const Temas = () => {
         <div className="modal-backdrop">
           <div className="custom-modal">
             <div className="modal-content shadow-lg p-4 rounded">
-              <h5 className="modal-title text-center mb-3">Confirmar Eliminación</h5>
+              <h5 className="modal-title text-center mb-3">
+                Confirmar Eliminación
+              </h5>
               {temaAEliminar ? (
                 <p className="text-center">
-                  ¿Estás seguro de que quieres eliminar el tema <strong>{temaAEliminar.nombre}</strong>?
+                  ¿Estás seguro de que quieres eliminar el tema{" "}
+                  <strong>{temaAEliminar.nombre}</strong>?
                 </p>
               ) : (
                 <p className="text-center">
-                  ¿Estás seguro de que quieres eliminar la asignatura <strong>{asignaturaAEliminar.asignatura}</strong>?
+                  ¿Estás seguro de que quieres eliminar la asignatura{" "}
+                  <strong>{asignaturaAEliminar.nombre}</strong>?
                 </p>
               )}
               <div className="d-flex justify-content-center gap-3 mt-3">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="button" className="btn btn-danger" onClick={temaAEliminar ? handleDeleteTema : handleDeleteAsignatura}>Eliminar</button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={
+                    temaAEliminar ? handleDeleteTema : handleDeleteAsignatura
+                  }
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           </div>

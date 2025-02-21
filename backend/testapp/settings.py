@@ -200,3 +200,11 @@ CORS_ALLOW_ALL_ORIGINS = False
 CSRF_COOKIE_HTTPONLY = False  # 🔹 Permitir acceso desde JavaScript
 CSRF_COOKIE_SAMESITE = "None"  # 🔹 Permitir envío de CSRF en dominios cruzados
 CSRF_COOKIE_SECURE = True  # 🔹 En producción, debe ser True
+
+## quitar
+
+INSTALLED_APPS += ["debug_toolbar"]
+MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

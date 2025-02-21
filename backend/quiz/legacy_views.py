@@ -28,84 +28,6 @@ import os
 
 
 ### ASIGNATURA ###
-
-@login_required
-def vista_asignatura(request, id):
-    asignatura = get_object_or_404(Asignatura, id=id, usuario=request.user)
-
-    preguntas_con_fallos = Pregunta.objects.filter(
-        tema__asignatura=asignatura,
-        fallos__gt=0
-    ).count()
-
-    temas_con_preguntas_falladas = Tema.objects.filter(
-        asignatura=asignatura,
-        preguntas__fallos__gt=0
-    )
-
-    if request.method == 'POST':
-        if 'file' in request.FILES:
-            form_file = ImportFileForm(request.POST, request.FILES)
-            if form_file.is_valid():
-                return importar_asignatura(request.FILES['file'], request.user, id)
-        else:
-            form = TemaFormWithoutAsignatura(request.POST, asignatura_id=id)
-            if form.is_valid():
-                tema = form.save(commit=False)
-                tema.asignatura = asignatura
-                tema.save()
-                return redirect('vista_asignatura', id)
-    else:
-        form = TemaFormWithoutAsignatura(asignatura_id=id)
-
-    asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
-
-    return render(request, 'quiz/asignatura/asignatura.html', {
-        'asignatura': asignatura,
-        'preguntas_con_fallos': preguntas_con_fallos,
-        'temas_con_preguntas_falladas': temas_con_preguntas_falladas,
-        'form': form
-        })
-
-@login_required
-def editar_asignatura(request, id):
-    asignatura = get_object_or_404(Asignatura, id=id, usuario=request.user)
-
-    if request.method == 'POST':
-        if 'form_tema' in request.POST:
-            form_tema = TemaFormWithoutAsignatura(request.POST, asignatura_id=id)
-            if form_tema.is_valid():
-                form_tema.save()
-                return redirect('vista_asignatura', id)
-        else:
-            form_asignatura = AsignaturaForm(request.POST, instance=asignatura)
-            if form_asignatura.is_valid():
-                form_asignatura.save()
-                return redirect('vista_asignatura', id)
-    else:
-        form_tema = TemaFormWithoutAsignatura(asignatura_id=id)
-        form_asignatura = AsignaturaForm(instance=asignatura)
-
-    preguntas_con_fallos = Pregunta.objects.filter(
-        tema__asignatura=asignatura,
-        fallos__gt=0
-    ).count()
-
-    temas_con_preguntas_falladas = Tema.objects.filter(
-        asignatura=asignatura,
-        preguntas__fallos__gt=0
-    )
-
-    asignatura.tiene_preguntas = asignatura.temas.filter(preguntas__isnull=False).exists()
-
-    return render(request, 'quiz/asignatura/asignatura_editar.html', {
-        'asignatura': asignatura,
-        'preguntas_con_fallos': preguntas_con_fallos,
-        'temas_con_preguntas_falladas': temas_con_preguntas_falladas,
-        'form': form_tema,
-        'form_asignatura': form_asignatura
-        })
-
 @login_required
 def estudiar_asignatura(request, id):
     asignatura = get_object_or_404(Asignatura, id=id)
@@ -137,141 +59,6 @@ def repasar_asignatura(request, id):
 ### TEMA ###
 
 @login_required
-def vista_tema(request, id):
-    tema = get_object_or_404(Tema, id=id, asignatura__usuario=request.user)
-    form = PreguntaConRespuestasFormWithoutTema(tema_id=id)
-
-    preguntas_con_fallos = Pregunta.objects.filter(
-        tema=tema,
-        fallos__gt=0
-    ).count()
-
-    if request.method == 'POST':
-        action = request.POST.get("action")
-
-        if action == "importar" and 'file' in request.FILES:
-            form_file = ImportFileForm(request.POST, request.FILES)
-            if form_file.is_valid():
-                return importar_tema(request.FILES['file'], id)
-            
-        elif action == "crear":
-            form = PreguntaConRespuestasFormWithoutTema(request.POST, tema_id=id)
-            if form.is_valid():
-                pregunta = Pregunta.objects.create(
-                    tema=tema,
-                    texto=form.cleaned_data['texto_pregunta'],
-                    ayuda = form.cleaned_data['ayuda']
-                )
-
-                respuestas = []
-                for i in range(1, 5):
-                    respuesta = Respuesta.objects.create(
-                        pregunta=pregunta,
-                        texto=form.cleaned_data[f'respuesta{i}']
-                    )
-                    respuestas.append(respuesta)
-
-                indice_correcto = int(form.cleaned_data['respuesta_correcta']) - 1
-                pregunta.respuesta_correcta = respuestas[indice_correcto]
-                pregunta.save()
-
-                return redirect('vista_tema', id)
-            else:
-                errors = form.errors.as_text().splitlines()
-                filtered_errors = [error for error in errors if not error.startswith('* __all__')]
-                error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/tema/tema.html', {
-                    'tema': tema,
-                    'form': form,
-                    'error_message': error_message
-                })
-            
-        elif action == "generar" and 'file' in request.FILES:
-            form_file = ImportFileForm(request.POST, request.FILES)
-            if form_file.is_valid():
-                return generar_tema(request.FILES['file'], id)
-
-    return render(request, 'quiz/tema/tema.html', {
-        'tema': tema,
-        'preguntas_con_fallos': preguntas_con_fallos,
-        'form': form
-    })
-
-@login_required
-def eliminar_tema(request, tema_id):
-    tema = get_object_or_404(Tema, id=tema_id, asignatura__usuario=request.user)
-    tema.delete()
-    return redirect('tema_crear')
-
-@login_required
-def eliminar_tema_asignatura(request, tema_id, asignatura_id):
-    tema = get_object_or_404(Tema, id=tema_id, asignatura__usuario=request.user)
-    tema.delete()
-    return redirect('vista_asignatura', asignatura_id)
-
-@login_required
-def editar_tema(request, id):
-    tema = get_object_or_404(Tema, id=id, asignatura__usuario=request.user)
-
-    form_pregunta = PreguntaConRespuestasFormWithoutTema(tema_id=id)
-    form_tema = TemaFormWithoutAsignatura(instance=tema, asignatura_id=tema.asignatura.id)
-
-    if request.method == 'POST':
-        if 'form_pregunta' in request.POST:
-            form_pregunta = PreguntaConRespuestasFormWithoutTema(request.POST, tema_id=id)
-            if form_pregunta.is_valid():
-                pregunta = Pregunta.objects.create(
-                    tema=tema,
-                    texto=form_pregunta.cleaned_data['texto_pregunta'],
-                    ayuda = form_pregunta.cleaned_data['ayuda']
-                )
-
-                respuestas = []
-                for i in range(1, 5):
-                    respuesta = Respuesta.objects.create(
-                        pregunta=pregunta,
-                        texto=form_pregunta.cleaned_data[f'respuesta{i}']
-                    )
-                    respuestas.append(respuesta)
-
-                indice_correcto = int(form_pregunta.cleaned_data['respuesta_correcta']) - 1
-                pregunta.respuesta_correcta = respuestas[indice_correcto]
-                pregunta.save()
-
-                return redirect('vista_tema', id)
-            else:
-                errors = form_pregunta.errors.as_text().splitlines()
-                filtered_errors = [error for error in errors if not error.startswith('* __all__')]
-                error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/tema/tema_editar.html', {
-                    'tema': tema,
-                    'form': form_pregunta,
-                    'form_tema': form_tema,
-                    'error_message': error_message
-                })
-        else:
-            form_tema = TemaFormWithoutAsignatura(request.POST, instance=tema, asignatura_id=tema.asignatura.id)
-            if form_tema.is_valid():
-                form_tema.save()
-                return redirect('vista_tema', id)
-            else:
-                errors = form_tema.errors.as_text().splitlines()
-                filtered_errors = [error for error in errors if not error.startswith('* __all__')]
-                error_message = "\n".join(filtered_errors)
-                return render(request, 'quiz/tema/tema_editar.html', {
-                    'tema': tema,
-                    'form': form_pregunta,
-                    'form_tema': form_tema,
-                    'error_message': error_message
-                })
-
-    return render(request, 'quiz/tema/tema_editar.html', {
-        'tema': tema, 
-        'form': form_pregunta,
-        'form_tema': form_tema
-    })
-
-@login_required
 def estudiar_tema(request, id):
     tema = get_object_or_404(Tema, id=id)
     preguntas = list(tema.preguntas.all().order_by('respondida', '?'))
@@ -298,58 +85,6 @@ def repasar_tema(request, id):
     request.session['total_respondidas'] = 0
     
     return redirect('pregunta_mostrar')
-
-### PREGUNTA ###
-
-@login_required
-def crear_pregunta_con_respuestas(request):
-    if request.method == 'POST':
-        form = PreguntaConRespuestasForm(request.POST, user=request.user)
-        if form.is_valid():
-            tema = form.cleaned_data['tema']
-            if tema.asignatura.usuario != request.user:
-                return HttpResponseForbidden(render(request, '403.html'))
-            pregunta = Pregunta.objects.create(
-                tema = tema,
-                texto = form.cleaned_data['texto_pregunta'],
-                ayuda = form.cleaned_data['ayuda']
-            )
-
-            respuestas = []
-            for i in range(1, 5):
-                respuesta = Respuesta.objects.create(
-                    pregunta=pregunta,
-                    texto=form.cleaned_data[f'respuesta{i}']
-                )
-                respuestas.append(respuesta)
-
-            indice_correcto = int(form.cleaned_data['respuesta_correcta']) - 1
-            pregunta.respuesta_correcta = respuestas[indice_correcto]
-            pregunta.save()
-
-            return redirect('lista_preguntas')
-    else:
-        form = PreguntaConRespuestasForm(user=request.user)
-
-    return render(request, 'quiz/crear_pregunta_con_respuestas.html', {'form': form})
-
-@login_required
-def pregunta_vista(request, id):
-    pregunta = get_object_or_404(Pregunta, id=id, tema__asignatura__usuario=request.user)
-    return render(request, 'quiz/pregunta/pregunta.html', {'pregunta': pregunta})
-
-@login_required
-def eliminar_pregunta(request, pregunta_id, tema_id):
-    pregunta = get_object_or_404(Pregunta, id=pregunta_id, tema__asignatura__usuario=request.user)
-    pregunta.delete()
-    return redirect('vista_tema', tema_id)
-
-### ERRORES ###
-def mi_error_404(request, exception):
-    return render(request, '404.html', status=404)
-
-def mi_error_403(request, exception):
-    return render(request, '403.html', status=403)
 
 ### TESTS ###
 
@@ -457,6 +192,7 @@ def finalizar_test(request):
         'fallos': fallos,
         'total_preguntas': total_preguntas,
     })
+
 
 ### DATOS ###
 
@@ -585,6 +321,40 @@ def exportar_tema(request, id):
 
     return response
 
+import json
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from .models import Tema
+
+def exportar_tema(request, id):
+    tema = get_object_or_404(Tema, id=id)
+
+    preguntas_data = [
+        {
+            "texto": pregunta.texto,
+            "respuestas": [
+                {"texto": respuesta.texto} 
+                for respuesta in [pregunta.respuesta_correcta] + list(pregunta.respuestas.exclude(id=pregunta.respuesta_correcta.id))
+                if respuesta
+            ],
+            **({"ayuda": pregunta.ayuda} if pregunta.ayuda else {})
+        }
+        for pregunta in tema.preguntas.all()
+    ]
+
+    data = {
+        "nombre": tema.nombre,
+        "preguntas": preguntas_data
+    }
+
+    json_data = json.dumps(data, ensure_ascii=False, indent=4)  # Indentación para mayor legibilidad
+
+    filename = f"{tema.asignatura.nombre}_{tema.nombre}_preguntas.txt"
+    response = HttpResponse(json_data, content_type="text/plain")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
+
 @csrf_exempt
 def importar_asignaturas(file, user):
     try:
@@ -700,6 +470,8 @@ def importar_tema(file, id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+### GENERACION ###
+
 from django.http import JsonResponse
 import traceback
 
@@ -733,7 +505,6 @@ def convert_uploaded_file_to_bytesio(uploaded_file):
     """Convierte un archivo subido en Django a un objeto BytesIO"""
     file_bytes = uploaded_file.read()  # Leer el contenido del archivo
     return BytesIO(file_bytes)  # Convertirlo en BytesIO
-
 
 import fitz  # PyMuPDF
 import pdfplumber
@@ -825,7 +596,6 @@ def extraer_texto_pdf(file, id):
             return f"Error en la solicitud a OpenAI: {str(e)}"
 
     return redirect(vista_tema, id)
-
 
 # 🔹 Función para extraer texto de DOC/DOCX
 def extraer_texto_doc(file):

@@ -53,7 +53,7 @@ const Login = () => {
       <div className="card shadow-lg p-4 rounded" style={{ maxWidth: "400px", width: "100%" }}>
         <h2 className="text-center h1 mb-3">Iniciar Sesión</h2>
 
-        <AlertMessage message={message} type="danger" />
+        {message && <AlertMessage message={message} setMessage={setMessage} type="danger" />}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
