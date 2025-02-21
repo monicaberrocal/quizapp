@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 import os
-import tempfile
+import base64
 
 # Django imports
 from django.http import JsonResponse, HttpResponse
@@ -355,28 +355,25 @@ def importar_preguntas_tema_excel(archivo, tema):
 @permission_classes([IsAuthenticated])
 def generar_preguntas(request, tema_id):
     archivo = request.FILES.get("archivo")
-
+    
     if not archivo:
         return JsonResponse({"error": "No se ha proporcionado ningún archivo."}, status=400)
-
+    
     try:
         tema = Tema.objects.get(id=tema_id, asignatura__usuario=request.user)
     except Tema.DoesNotExist:
         return JsonResponse({"error": "Tema no encontrado o no tienes permiso."}, status=404)
-
+    
     file_extension = os.path.splitext(archivo.name)[1].lower()
-
+    
     if file_extension not in [".pdf", ".doc", ".docx"]:
         return JsonResponse({"success": False, "error": "Formato no soportado"}, status=400)
-
-    # Guardar temporalmente el archivo
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
-        for chunk in archivo.chunks():
-            temp_file.write(chunk)
-        temp_file_path = temp_file.name
-
-    # Llamar a la tarea de Celery en segundo plano
-    procesar_archivo_task.delay(tema_id, temp_file_path, file_extension)
-
-    # Devolver una respuesta inmediata al frontend
+    
+    # Leer el archivo en memoria y codificarlo en base64
+    archivo_data = archivo.read()
+    archivo_base64 = base64.b64encode(archivo_data).decode('utf-8')
+    
+    # Llamar a la tarea de Celery en segundo plano con el archivo en memoria
+    procesar_archivo_task.delay(tema_id, archivo_base64, file_extension)
+    
     return JsonResponse({"success": True, "message": "El archivo se está procesando en segundo plano."}, status=200)

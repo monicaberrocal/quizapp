@@ -1,20 +1,18 @@
+import base64
 from celery import shared_task
 from .models import Tema
-import os
 
 @shared_task
-def procesar_archivo_task(tema_id, archivo_path, extension):
+def procesar_archivo_task(tema_id, archivo_base64, extension):
     try:
         tema = Tema.objects.get(id=tema_id)
         
-        if os.path.exists(archivo_path):
-            print(f"✅ El archivo existe en: {archivo_path}")
-        else:
-            print(f"❌ El archivo NO existe en: {archivo_path}")
+        # Decodificar el archivo desde base64
+        archivo_data = base64.b64decode(archivo_base64)
         
         if extension == ".pdf":
             print("Procesando PDF...")
-            # Aquí agregarías la lógica para leer el archivo PDF y llamar a la API de OpenAI
+            # Aquí podrías guardar el archivo temporalmente o procesarlo directamente
         elif extension in [".doc", ".docx"]:
             print("Procesando documento de Word...")
         
