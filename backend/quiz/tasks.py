@@ -1,4 +1,5 @@
 import base64
+import os
 from celery import shared_task
 from .models import Tema
 from .celery.pdf_process import *
