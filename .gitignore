@@ -8,3 +8,5 @@ backend/quiz/__pycache__/*
 frontend/.env
 frontend/src/api.js
 frontend/testapp/__pycache__/*
+pruebas.ipynb
+.history
