@@ -24,13 +24,6 @@ const Homepage = () => {
         </div>
       </div>
 
-      <div className="row justify-content-center">
-        <Link className="btn btn-primary mx-2" to="/pruebas">
-          <h4>Probar</h4>
-        </Link>
-        <button id="ejecutarTarea">Ejecutar Tarea</button>
-      </div>
-
       <div className="d-flex justify-content-center mt-3">
         {isAuthenticated ? (
           <>

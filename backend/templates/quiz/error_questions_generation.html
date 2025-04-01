@@ -1,0 +1,11 @@
+{% extends 'base_email.html' %}
+{% block email %}
+<div class="container">
+    <img src="https://gemastudies.up.railway.app/assets/logo_completo-BxMLmImX.png" alt="GemaStudies" class="logo">
+    <h2>❌ Ha ocurrido un error</h2>
+    <p>Intentamos procesar el tema <strong>"{{ tema }}"</strong> pero algo salió mal.</p>
+    <p>Por favor, inténtalo de nuevo más tarde o contacta con soporte si el problema persiste.</p>
+    <hr>
+    <p class="footer">GemaStudies © 2025</p>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import os
 import base64
+from io import BytesIO
 
 # Django imports
 from django.http import JsonResponse, HttpResponse
@@ -373,7 +374,10 @@ def generar_preguntas(request, tema_id):
     archivo_data = archivo.read()
     archivo_base64 = base64.b64encode(archivo_data).decode('utf-8')
     
+    tema = Tema.objects.get(id=tema_id)
+    user_email = tema.asignatura.usuario.email
+    
     # Llamar a la tarea de Celery en segundo plano con el archivo en memoria
-    procesar_archivo_task.delay(tema_id, archivo_base64, file_extension)
+    procesar_archivo_task.delay(tema_id, archivo_base64, file_extension, user_email)
     
     return JsonResponse({"success": True, "message": "El archivo se está procesando en segundo plano."}, status=200)

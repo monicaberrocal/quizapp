@@ -10,10 +10,10 @@ def send_activation_email(request, usuario, link_activacion):
 
     subject = "🔐 Activa tu cuenta en nuestra plataforma"
 
-    send_email(request, subject, html_content, [usuario.email])
+    send_email(subject, html_content, [usuario.email])
 
 
-def send_email(request, subject, html_content, destinataries):
+def send_email(subject, html_content, destinataries):
     email = EmailMultiAlternatives(
         subject=subject,
         body=strip_tags(html_content),

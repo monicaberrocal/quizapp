@@ -188,7 +188,7 @@ const Temas = () => {
                           className="btn i-menu i-orange"
                           data-toggle="tooltip"
                           data-placement="top"
-                          title="Tooltip on top"
+                          title="Estudiar"
                         >
                           <i className="bi bi-book-half"></i>
                           {/* Estudiar */}
@@ -266,64 +266,66 @@ const Temas = () => {
                             key={tema.id}
                             className="list-group-item p-0 hover-pink"
                           >
-                            <Link
-                              to={`/temas/${tema.id}`}
-                              className="d-flex justify-content-between align-items-center text-decoration-none text-dark p-2 w-100"
-                            >
-                              {tema.nombre}
-                            </Link>
-                            <div>
-                              {/* 📌 Botón de Estudiar */}
-                              {tema.tiene_preguntas ? (
-                                <Link
-                                  to={`/cuestionario/estudiar/tema/${tema.id}`}
-                                  className="btn i-menu i-orange"
-                                  data-toggle="tooltip"
-                                  data-placement="top"
-                                  title="Tooltip on top"
-                                >
-                                  <i className="bi bi-book-half"></i>
-                                  {/* Estudiar */}
-                                </Link>
-                              ) : (
-                                <span className="btn i-menu i-orange invisible">
-                                  <i className="bi bi-book-half"></i>
-                                  {/* Estudiar */}
-                                </span>
-                              )}
-
-                              {/* 📌 Botón de Repasar */}
-                              {tema.tiene_fallos ? (
-                                <Link
-                                  to={`/cuestionario/repasar/tema/${asignatura.id}`}
-                                  className="btn i-menu i-orange"
-                                  title="Repasar preguntas falladas"
-                                  aria-label="Repasar preguntas falladas"
-                                  data-bs-toggle="tooltip"
-                                >
-                                  <i className="bi bi-reply-all-fill"></i>
-                                  {/* Repasar */}
-                                </Link>
-                              ) : (
-                                <span className="btn i-menu i-orange invisible">
-                                  <i className="bi bi-reply-all-fill"></i>
-                                  {/* Repasar */}
-                                </span>
-                              )}
-                              <i
-                                className="bi bi-trash3-fill i-orange i-menu-sm btn"
-                                style={{
-                                  cursor: "pointer",
-                                  fontSize: "1.2rem",
-                                }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleOpenTemaModal(tema);
-                                }}
+                            <div className="d-flex justify-content-between align-items-center">
+                              <Link
+                                to={`/temas/${tema.id}`}
+                                className="text-decoration-none text-dark p-2"
                               >
-                                {/* Eliminar */}
-                              </i>
-                            </div>
+                                {tema.nombre}
+                              </Link>
+                              <div>
+                                {/* 📌 Botón de Estudiar */}
+                                {tema.tiene_preguntas ? (
+                                  <Link
+                                    to={`/cuestionario/estudiar/tema/${tema.id}`}
+                                    className="btn i-menu i-orange"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Estudiar"
+                                  >
+                                    <i className="bi bi-book-half"></i>
+                                    {/* Estudiar */}
+                                  </Link>
+                                ) : (
+                                  <span className="btn i-menu i-orange invisible">
+                                    <i className="bi bi-book-half"></i>
+                                    {/* Estudiar */}
+                                  </span>
+                                )}
+
+                                {/* 📌 Botón de Repasar */}
+                                {tema.tiene_fallos ? (
+                                  <Link
+                                    to={`/cuestionario/repasar/tema/${asignatura.id}`}
+                                    className="btn i-menu i-orange"
+                                    title="Repasar preguntas falladas"
+                                    aria-label="Repasar preguntas falladas"
+                                    data-bs-toggle="tooltip"
+                                  >
+                                    <i className="bi bi-reply-all-fill"></i>
+                                    {/* Repasar */}
+                                  </Link>
+                                ) : (
+                                  <span className="btn i-menu i-orange invisible">
+                                    <i className="bi bi-reply-all-fill"></i>
+                                    {/* Repasar */}
+                                  </span>
+                                )}
+                                <i
+                                  className="bi bi-trash3-fill i-orange i-menu-sm btn"
+                                  style={{
+                                    cursor: "pointer",
+                                    fontSize: "1.2rem",
+                                  }}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleOpenTemaModal(tema);
+                                  }}
+                                >
+                                  {/* Eliminar */}
+                                </i>
+                              </div>
+                              </div>
                           </li>
                         ))}
                       </ul>

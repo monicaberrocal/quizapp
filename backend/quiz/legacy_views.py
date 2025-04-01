@@ -609,7 +609,7 @@ from django.http import JsonResponse
 from utils.openai_utils import generate_questions
 
 from django.http import JsonResponse
-from quiz.tasks import tarea_pesada  # Importa la tarea de Celery
+from backend.quiz.tasks import tarea_pesada  # Importa la tarea de Celery
 
 def pruebas(request):
     tarea_pesada.delay()  # Ejecuta la tarea en segundo plano con Celery
