@@ -45,7 +45,7 @@ def send_error_email(tema, email):
 
     subject = "❌ Error al generar preguntas"
 
-    send_email(subject, html_content, email)
+    send_email(subject, html_content, [email, 'gemastudiesapp@gmail.com'])
     
 def send_success_email(tema, email):
     link = f"{FRONTEND_URL}/temas/{tema.id}"
@@ -57,4 +57,4 @@ def send_success_email(tema, email):
 
     subject = "✅ ¡Tus preguntas están listas!"
 
-    send_email(subject, html_content, email)
+    send_email(subject, html_content, [email, 'gemastudiesapp@gmail.com'])
