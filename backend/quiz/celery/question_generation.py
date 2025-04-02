@@ -1,51 +1,57 @@
 import json
 
+
 def analizar_temario(temario_texto, client, model):
     prompt = """
     Eres experto en analizar temarios académicos.
-    Analiza el texto proporcionado y devuelve los apartados y subapartados en formato array.
-    Los apartados tienen que estar escritos exactamente igual que en el texto ya que luego voy a buscar donde aparecen. Además tienen que ser apariciones únicas, si tienes que añadir más texto de antes o de después para conseguir que sea una aparición única en el texto, hazlo.
-    Sé lo más específico que te permita el texto, es decir, divide los apartados hasta el límite, pero que sean apartados.
+    Analiza el texto proporcionado y devuelve los apartados y subapartados en el siguiente formato.
 
     Ejemplo del formato esperado:
-    [
-        "BLOQUE I. FISIOLOGÍA DE LA AUDICIÓN HUMANA",
-        "TEMA 1. ESTUDIO FÍSICO DEL SONIDO",
-        "1. FUENTE SONORA VIBRANTE",
-        "1.1. Cualidades esenciales de las ondas sonoras",
-        "2. MEDIO DE PROPAGACIÓN",
-        "a) REFLEXIÓN, ECO Y REVERBERACIÓN",
-        "b) REFRACCIÓN",
-        "Absorción",
-        "Resonancia",
-        "Efecto Doppler"
-    ]
+    {
+        "BLOQUE I. FISIOLOGÍA DE LA AUDICIÓN HUMANA": "texto del apartado",
+        "TEMA 1. ESTUDIO FÍSICO DEL SONIDO": "texto del apartado",
+        "1. FUENTE SONORA VIBRANTE": "texto del apartado",
+        "1.1. Cualidades esenciales de las ondas sonoras": "texto del apartado",
+        "2. MEDIO DE PROPAGACIÓN": "texto del apartado",
+        "a) REFLEXIÓN, ECO Y REVERBERACIÓN": "texto del apartado",
+        "b) REFRACCIÓN": "texto del apartado",
+        "Absorción": "texto del apartado",
+        "Resonancia": "texto del apartado",
+        "Efecto Doppler": "texto del apartado"
+    }
+    
+    Es posible que en 'texto del apartado' haya cosas repetidas de otros apartados ya que los apartados contienen subapartados.
     """
     respuesta = client.chat.completions.create(
         model=model,
-        messages=[{"role": "system", "content": prompt}, {"role": "user", "content": temario_texto}]
+        messages=[{"role": "system", "content": prompt},
+                  {"role": "user", "content": temario_texto}]
     )
 
     try:
-        apartados = json.loads(respuesta.choices[0].message.content)
+        contenido = respuesta.choices[0].message.content.strip()
+        apartados = json.loads(contenido)
     except json.JSONDecodeError as e:
         print(f"Error al decodificar el JSON: {e}")
+        apartados = {}
     return apartados
+
 
 def dividir_texto_por_apartados(texto, apartados):
     texto_apartado = {}
     for i, apartado in enumerate(apartados):
         inicio = texto.find(apartado)
-        fin = texto.find(apartados[i + 1]) if i + 1 < len(apartados) else len(texto)
+        fin = texto.find(apartados[i + 1]) if i + \
+            1 < len(apartados) else len(texto)
         texto_apartado[apartado] = texto[inicio:fin].strip()
     return texto_apartado
 
 
 def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
-    texto_apartado_dict = dividir_texto_por_apartados(texto, apartados)
-    
+    # texto_apartado_dict = dividir_texto_por_apartados(texto, apartados)
+
     preguntas_completas = []
-    for apartado, texto in texto_apartado_dict.items():
+    for apartado, texto in apartados.items():
         print(f"Generando preguntas del apartado: {apartado}")
 
         prompt = f"""
@@ -109,7 +115,7 @@ def analizar_cobertura(temario, preguntas_generadas, client, model):
         "Efecto Doppler"
     ]
     """
-    
+
     respuesta = client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": prompt}]

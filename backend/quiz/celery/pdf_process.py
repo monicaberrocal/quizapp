@@ -58,7 +58,7 @@ def importar_preguntas_json(tema_data, tema):
     for pregunta_data in tema_data["preguntas"]:
         pregunta = Pregunta.objects.create(
             texto=pregunta_data["texto"],
-            ayuda=pregunta_data["ayuda"],
+            ayuda=pregunta_data.get("ayuda", ''),
             tema=tema
         )
 
