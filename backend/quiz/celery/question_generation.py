@@ -22,14 +22,18 @@ def analizar_temario(temario_texto, client, model):
     
     Es posible que en 'texto del apartado' haya cosas repetidas de otros apartados ya que los apartados contienen subapartados.
     """
-    respuesta = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "system", "content": prompt},
-                  {"role": "user", "content": temario_texto}]
-    )
+    try:
+        respuesta = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": prompt},
+                    {"role": "user", "content": temario_texto}]
+        )
 
-    contenido = respuesta.choices[0].message.content.strip()
-    apartados = json.loads(contenido)
+        contenido = respuesta.choices[0].message.content.strip()
+        apartados = json.loads(contenido)
+    except Exception as e:
+        print(e)
+        raise
 
     return apartados
 
@@ -44,11 +48,12 @@ def dividir_texto_por_apartados(texto, apartados):
     return texto_apartado
 
 
-def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
+def generar_preguntas_json(texto, apartados, client, model, cantidad=20):
     # texto_apartado_dict = dividir_texto_por_apartados(texto, apartados)
 
     preguntas_completas = []
-    for texto in apartados.items():
+    for texto in apartados:
+        print(texto)
         prompt = f"""
         Eres experto en crear preguntas tipo test sobre temarios académicos.
         Genera {cantidad} preguntas tipo test sobre el texto proporcionado.
@@ -73,14 +78,17 @@ def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
         El texto del temario es el siguiente:
         {texto}
         """
-
-        respuesta = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "system", "content": prompt}],
-            response_format={"type": "json_object"}
-        )
-        preguntas_json = json.loads(respuesta.choices[0].message.content)
-        preguntas_completas.extend(preguntas_json["preguntas"])
+        try:
+            respuesta = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "system", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            preguntas_json = json.loads(respuesta.choices[0].message.content)
+            preguntas_completas.extend(preguntas_json["preguntas"])
+        except Exception as e:
+            print(e)
+            raise
 
     print(f"✅ Se generaron {len(preguntas_completas)} preguntas en total.")
     return preguntas_completas

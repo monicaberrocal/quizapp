@@ -8,7 +8,6 @@ def procesar_pdf(tema, file, client, model):
     print("dentro de procesar")
     texto = extraer_texto_pdf(file, client, model)
     preguntas_json = generar_bateria_completa(texto, client, model)
-    print(preguntas_json)
     importar_preguntas_json(preguntas_json, tema)
     
 def extraer_texto_pdf(file, client, model):
@@ -20,16 +19,20 @@ def extraer_texto_pdf(file, client, model):
         text = '-¿!11441165473941=(-' + text_pymupdf[i] + '-¿!11441165473941=(-' + text_pdfplumber[i] + '-¿!11441165473941=(-' + \
             text_pypdf2[i] + '-¿!11441165473941=(-' + \
             text_pdfminer[i]  # + '-¿!11441165473941=(-' + text_tesseract[i]
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system",
-                    "content": "He usado 5 librerías para extraer el texto de un pdf. Los 4 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 4 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
-                {"role": "user", "content": text},
-            ],
-            temperature=0.7
-        )
-        respuesta += response.choices[0].message.content
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system",
+                        "content": "He usado 5 librerías para extraer el texto de un pdf. Los 4 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 4 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
+                    {"role": "user", "content": text},
+                ],
+                temperature=0.7
+            )
+            respuesta += response.choices[0].message.content
+        except Exception as e:
+            print(e)
+            raise
             
     return respuesta
 
@@ -40,7 +43,7 @@ def generar_bateria_completa(temario_texto, client, model):
     apartados = dividir_por_apartados(temario_texto)
     
     # Paso 2: Generar 20 preguntas por cada apartado en el formato JSON solicitado    
-    preguntas_generadas = generar_preguntas_json(temario_texto, apartados, client, model, 10)
+    preguntas_generadas = generar_preguntas_json(temario_texto, apartados, client, model, 20)
 
     # Paso 3: Analizar la cobertura del temario
     # apartados_no_cubiertos = analizar_cobertura(temario_texto, preguntas_generadas, client, model)
@@ -100,14 +103,64 @@ def dividir_por_apartados(texto):
     indices = [m.start() for m in patrones_titulo.finditer(texto)]
     
     if not indices:
-        return texto  # No se encontraron títulos
+        return [texto]  # No se encontraron títulos
 
     # Añadir el final del texto como último índice
     indices.append(len(texto))
 
-    for i in range(len(indices)-1):
-        seccion = texto[indices[i]:indices[i+1]].strip()
-        if seccion:
-            secciones.append(seccion)
+    # for i in range(len(indices)-1):
+    #     seccion = texto[indices[i]:indices[i+1]].strip()
+    #     if seccion:
+    #         secciones.append(seccion)
 
-    return secciones
+    # return secciones
+
+    # Dividir en bloques preliminares
+    # bloques = []
+    # for i in range(len(indices) - 1):
+    #     bloque = texto[indices[i]:indices[i + 1]].strip()
+    #     if bloque:
+    #         bloques.append(bloque)
+
+    # # Fusionar bloques que son solo una línea con el siguiente
+    # secciones = []
+    # skip_next = False
+    # for i in range(len(bloques)):
+    #     if skip_next:
+    #         skip_next = False
+    #         continue
+
+    #     lineas = bloques[i].splitlines()
+    #     if len(lineas) <= 1 and i + 1 < len(bloques):
+    #         # Fusionar con el siguiente bloque
+    #         fusionado = bloques[i] + "\n" + bloques[i + 1]
+    #         secciones.append(fusionado)
+    #         skip_next = True
+    #     else:
+    #         secciones.append(bloques[i])
+
+    # return secciones
+    
+    bloques = [texto[indices[i]:indices[i+1]].strip() for i in range(len(indices)-1)]
+
+    def es_bloque_vacio(bloque):
+        """True si el bloque no tiene contenido real más allá del título."""
+        lineas = bloque.splitlines()
+        return not any(len(linea.strip()) > 5 for linea in lineas[1:])
+
+    def procesar_bloques(bloques, acumulador=""):
+        if not bloques:
+            return [acumulador.strip()] if acumulador.strip() else []
+
+        bloque_actual = bloques[0]
+        resto = bloques[1:]
+
+        if es_bloque_vacio(bloque_actual):
+            # Acumular y seguir
+            return procesar_bloques(resto, acumulador + "\n" + bloque_actual)
+        else:
+            # Este sí tiene contenido, devolver lo acumulado + continuar
+            seccion = (acumulador + "\n" + bloque_actual).strip()
+            return [seccion] + procesar_bloques(resto)
+
+    return procesar_bloques(bloques)

@@ -37,6 +37,7 @@ def procesar_archivo_task(tema_id, archivo_base64, extension, email):
         
     except Exception as e:
         error_message = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+        print(error_message)
         send_log_email(error_message)
         send_error_email(tema.nombre, email)
 
@@ -68,4 +69,4 @@ def send_log_email(message):
         body=message,
         from_email="gemastudiesapp@gmail.com",
         to=["gemastudiesapp@gmail.com"],
-    ).send
+    ).send()
