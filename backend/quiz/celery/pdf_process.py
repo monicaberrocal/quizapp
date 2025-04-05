@@ -1,6 +1,7 @@
 from .pdf_extractors import extract_text_combined
 from .question_generation import *
 from ..models import Pregunta, Respuesta
+import re
 
 def procesar_pdf(tema, file, client, model):
     print("dentro de procesar")
@@ -36,8 +37,9 @@ def extraer_texto_pdf(file, client, model):
 
 def generar_bateria_completa(temario_texto, client, model):
     # Paso 1: Análisis del temario
-    apartados = analizar_temario(temario_texto, client, model)
-    print('\n\n', apartados)
+    # apartados = analizar_temario(temario_texto, client, model)
+    
+    apartados = dividir_por_apartados(temario_texto)
     
     # Paso 2: Generar 20 preguntas por cada apartado en el formato JSON solicitado    
     preguntas_generadas = generar_preguntas_json(temario_texto, apartados, client, model, 10)
@@ -73,3 +75,41 @@ def importar_preguntas_json(tema_data, tema):
 
         pregunta.respuesta_correcta = respuestas_formatted[0]
         pregunta.save()
+        
+def dividir_por_apartados(texto):
+    patrones_titulo = re.compile(
+        r'''^(
+            BLOQUE\s+\w+ |                      # Coincide con encabezados como 'BLOQUE I', 'BLOQUE II', etc.
+            Bloque\s+\w+ |
+            TEMA\s+\w+ |                        # Coincide con encabezados como 'TEMA 1', 'TEMA 2', etc.
+            Tema\s+\w+ |
+            CAPÍTULO\s+\w+(?:\.\d+)*\.? |       # Coincide con 'CAPÍTULO 1', 'CAPÍTULO I.2', etc.
+            Capítulo\s+\w+(?:\.\d+)*\.? |
+            SECCIÓN\s+\w+(?:\.\d+)*\.? |        # Coincide con 'SECCIÓN 2', 'SECCIÓN 2.1', etc.
+            Sección\s+\w+(?:\.\d+)*\.? |
+            APÉNDICE\s+\w+ |                    # Coincide con 'APÉNDICE A', 'APÉNDICE B', etc.
+            Apéndice\s+\w+ |
+            \d+(?:\.\d+)* |                     # Coincide con '1', '1.1', '1.1.1', etc. (índices numerados)
+            \d+\) |                             # Coincide con ítems numerados tipo '1)', '2)', etc.
+            [a-zA-Z]+[\.\)]\s+ |                # Coincide con ítems como 'a)', 'b.', 'aa)', 'c.', etc.
+            [IVXLCDM]+\.\s+ |                   # Coincide con números romanos con punto, ej: 'I. ', 'II. ', etc.
+            [A-ZÁÉÍÓÚÑ\s]{4,}                   # Coincide con líneas completamente en mayúsculas (mín. 4 letras)
+        )[^\n]*''',
+        re.MULTILINE | re.VERBOSE
+    )
+
+    secciones = []
+    indices = [m.start() for m in patrones_titulo.finditer(texto)]
+    
+    if not indices:
+        return texto  # No se encontraron títulos
+
+    # Añadir el final del texto como último índice
+    indices.append(len(texto))
+
+    for i in range(len(indices)-1):
+        seccion = texto[indices[i]:indices[i+1]].strip()
+        if seccion:
+            secciones.append(seccion)
+
+    return secciones

@@ -51,9 +51,7 @@ def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
     # texto_apartado_dict = dividir_texto_por_apartados(texto, apartados)
 
     preguntas_completas = []
-    for apartado, texto in apartados.items():
-        print(f"Generando preguntas del apartado: {apartado}")
-
+    for texto in apartados.items():
         prompt = f"""
         Eres experto en crear preguntas tipo test sobre temarios académicos.
         Genera {cantidad} preguntas tipo test sobre el texto proporcionado.
@@ -88,7 +86,7 @@ def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
             preguntas_json = json.loads(respuesta.choices[0].message.content)
             preguntas_completas.extend(preguntas_json["preguntas"])
         except Exception as e:
-            print(f"Error generando preguntas para '{apartado}': {str(e)}")
+            print(f"Error generando preguntas para '{texto}': {str(e)}")
 
     print(f"✅ Se generaron {len(preguntas_completas)} preguntas en total.")
     return preguntas_completas
