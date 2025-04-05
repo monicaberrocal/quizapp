@@ -7,6 +7,8 @@ import openai
 from django.conf import settings
 from .utils import send_email
 from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+import traceback
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")  # 🔹 Variable de entorno para la URL de React
 
@@ -34,8 +36,8 @@ def procesar_archivo_task(tema_id, archivo_base64, extension, email):
         print("Tema no encontrado")
         
     except Exception as e:
-        print(f"❌ Error al procesar el archivo: {e}")
-
+        error_message = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+        send_log_email(error_message)
         send_error_email(tema.nombre, email)
 
 def send_error_email(tema, email):
@@ -45,7 +47,7 @@ def send_error_email(tema, email):
 
     subject = "❌ Error al generar preguntas"
 
-    send_email(subject, html_content, [email, 'gemastudiesapp@gmail.com'])
+    send_email(subject, html_content, [email])
     
 def send_success_email(tema, email):
     link = f"{FRONTEND_URL}/temas/{tema.id}"
@@ -57,4 +59,13 @@ def send_success_email(tema, email):
 
     subject = "✅ ¡Tus preguntas están listas!"
 
-    send_email(subject, html_content, [email, 'gemastudiesapp@gmail.com'])
+    send_email(subject, html_content, [email])
+    
+    
+def send_log_email(message):
+    EmailMultiAlternatives(
+        subject="Error en una ejecución",
+        body=message,
+        from_email="gemastudiesapp@gmail.com",
+        to=["gemastudiesapp@gmail.com"],
+    ).send

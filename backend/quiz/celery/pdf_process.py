@@ -2,6 +2,8 @@ from .pdf_extractors import extract_text_combined
 from .question_generation import *
 from ..models import Pregunta, Respuesta
 import re
+import traceback
+from ..tasks import send_log_email
 
 def procesar_pdf(tema, file, client, model):
     print("dentro de procesar")
@@ -19,20 +21,17 @@ def extraer_texto_pdf(file, client, model):
         text = '-¿!11441165473941=(-' + text_pymupdf[i] + '-¿!11441165473941=(-' + text_pdfplumber[i] + '-¿!11441165473941=(-' + \
             text_pypdf2[i] + '-¿!11441165473941=(-' + \
             text_pdfminer[i]  # + '-¿!11441165473941=(-' + text_tesseract[i]
-        try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system",
-                        "content": "He usado 5 librerías para extraer el texto de un pdf. Los 4 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 4 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
-                    {"role": "user", "content": text},
-                ],
-                temperature=0.7
-            )
-            respuesta += response.choices[0].message.content
-        except Exception as e:
-            return f"Error en la solicitud a OpenAI: {str(e)}"
-
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system",
+                    "content": "He usado 5 librerías para extraer el texto de un pdf. Los 4 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 4 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
+                {"role": "user", "content": text},
+            ],
+            temperature=0.7
+        )
+        respuesta += response.choices[0].message.content
+            
     return respuesta
 
 def generar_bateria_completa(temario_texto, client, model):

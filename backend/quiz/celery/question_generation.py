@@ -28,12 +28,9 @@ def analizar_temario(temario_texto, client, model):
                   {"role": "user", "content": temario_texto}]
     )
 
-    try:
-        contenido = respuesta.choices[0].message.content.strip()
-        apartados = json.loads(contenido)
-    except json.JSONDecodeError as e:
-        print(f"Error al decodificar el JSON: {e}")
-        apartados = {}
+    contenido = respuesta.choices[0].message.content.strip()
+    apartados = json.loads(contenido)
+
     return apartados
 
 
@@ -77,16 +74,13 @@ def generar_preguntas_json(texto, apartados, client, model, cantidad=20,):
         {texto}
         """
 
-        try:
-            respuesta = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "system", "content": prompt}],
-                response_format={"type": "json_object"}
-            )
-            preguntas_json = json.loads(respuesta.choices[0].message.content)
-            preguntas_completas.extend(preguntas_json["preguntas"])
-        except Exception as e:
-            print(f"Error generando preguntas para '{texto}': {str(e)}")
+        respuesta = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        preguntas_json = json.loads(respuesta.choices[0].message.content)
+        preguntas_completas.extend(preguntas_json["preguntas"])
 
     print(f"✅ Se generaron {len(preguntas_completas)} preguntas en total.")
     return preguntas_completas
