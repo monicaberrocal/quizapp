@@ -3,7 +3,6 @@ from .question_generation import *
 from ..models import Pregunta, Respuesta
 import re
 import traceback
-from ..tasks import send_log_email
 
 def procesar_pdf(tema, file, client, model):
     print("dentro de procesar")
