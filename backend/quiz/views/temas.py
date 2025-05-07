@@ -2,24 +2,20 @@ import json
 import pandas as pd
 import os
 import base64
-from io import BytesIO
 
-# Django imports
 from django.http import JsonResponse, HttpResponse
 
-# Django REST framework imports
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-# Local imports (models and serializers)
 from ..models import Asignatura, Pregunta, Tema, Respuesta
 from ..serializers.serializers import (
     TemaPreguntasSerializer,
     TemaSerializer
 )
-from ..tasks import procesar_archivo_task
+from ..tasks import process_uploaded_file_task
 
 
 @api_view(["GET", "DELETE", "PUT"])
@@ -293,7 +289,6 @@ def importar_preguntas(request, tema_id):
     Importar preguntas a un tema en formato JSON o Excel.
     """
     archivo = request.FILES.get("archivo")
-    # 📌 Se elige entre "json" o "excel"
     formato = request.GET.get("formato", "json")
 
     if not archivo:
@@ -370,14 +365,20 @@ def generar_preguntas(request, tema_id):
     if file_extension not in [".pdf", ".doc", ".docx"]:
         return JsonResponse({"success": False, "error": "Formato no soportado"}, status=400)
     
-    # Leer el archivo en memoria y codificarlo en base64
+
     archivo_data = archivo.read()
+    # text_list = extract_text_with_pymupdf(archivo_data)
+    # character_count = sum(len(page) for page in text_list)
+    # user = request.user
+    # usage = user.openai_usage
+    # if not usage.can_use(character_count):
+    #     return JsonResponse({"success": False, "message": "No tienes suficientes créditos.", "credits": usage.left_use()}, status=200)
+
     archivo_base64 = base64.b64encode(archivo_data).decode('utf-8')
     
     tema = Tema.objects.get(id=tema_id)
     user_email = tema.asignatura.usuario.email
     
-    # Llamar a la tarea de Celery en segundo plano con el archivo en memoria
-    procesar_archivo_task.delay(tema_id, archivo_base64, file_extension, user_email)
+    process_uploaded_file_task.delay(tema_id, archivo_base64, file_extension, user_email)
     
     return JsonResponse({"success": True, "message": "El archivo se está procesando en segundo plano."}, status=200)

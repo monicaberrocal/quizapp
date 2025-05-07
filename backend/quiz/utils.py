@@ -1,6 +1,9 @@
+import os
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 def send_activation_email(request, usuario, link_activacion):
     html_content = render_to_string("quiz/registro/email/activacion.html", {
@@ -22,3 +25,31 @@ def send_email(subject, html_content, destinataries):
     )
     email.attach_alternative(html_content, "text/html")
     email.send()
+    
+def send_log_email(message):
+    EmailMultiAlternatives(
+        subject="Execution error",
+        body=message,
+        from_email="gemastudiesapp@gmail.com",
+        to=["gemastudiesapp@gmail.com"],
+    ).send()
+    
+def send_error_email(tema_name, user_email):
+    html_content = render_to_string("quiz/error_questions_generation.html", {
+        "tema": tema_name
+    })
+
+    subject = "❌ Error al generar las preguntas"
+    send_email(subject, html_content, [user_email])
+
+
+def send_success_email(tema, user_email):
+    link = f"{FRONTEND_URL}/temas/{tema.id}"
+
+    html_content = render_to_string("quiz/success_questions_generation.html", {
+        "tema": tema.nombre,
+        "quiz_link": link
+    })
+
+    subject = "✅ Tus preguntas están listas!"
+    send_email(subject, html_content, [user_email])

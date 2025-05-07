@@ -5,12 +5,21 @@ from django.db import transaction
 from ..models import Asignatura, Tema, Pregunta, Respuesta, CodigoActivacion
 from ..utils import send_activation_email
 import os
+from rest_framework.validators import UniqueValidator
 
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")  # 🔹 Variable de entorno para la URL de React
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, required=True, label="Confirmar contraseña")
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="Este correo ya está registrado.")]
+    )
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="Este nombre de usuario ya está en uso.")]
+    )
 
     class Meta:
         model = User
@@ -18,10 +27,15 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
         }
-
+    
     def validate(self, data):
         if data["password"] != data["password2"]:
             raise serializers.ValidationError({"password2": "Las contraseñas no coinciden."})
+        
+        username = data["username"]
+
+        if User.objects.filter(email=username).exists():
+            raise serializers.ValidationError({"username": "Este nombre de usuario coincide con un correo ya registrado."})
 
         try:
             validate_password(data["password"])
@@ -29,6 +43,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": e.detail})
 
         return data
+
 
     def create(self, validated_data):
         validated_data.pop("password2")
@@ -171,4 +186,3 @@ class AsignaturaSerializer(serializers.ModelSerializer):
 
     def get_temas_con_preguntas_falladas(self, obj):
         return [tema.id for tema in obj.temas.all() if tema.preguntas.filter(fallos__gt=0).exists()]
-

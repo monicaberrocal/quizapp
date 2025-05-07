@@ -28,7 +28,8 @@ OPENAI_API_KEY = config('OPENAI_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [
+                       s.strip() for s in v.split(',')])
 CORS_ALLOWED_ORIGINS = [config('CORS_ALLOWED_ORIGINS')]
 
 
@@ -124,7 +125,6 @@ DATABASES = {
 }
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -201,10 +201,25 @@ CSRF_COOKIE_HTTPONLY = False  # 🔹 Permitir acceso desde JavaScript
 CSRF_COOKIE_SAMESITE = "None"  # 🔹 Permitir envío de CSRF en dominios cruzados
 CSRF_COOKIE_SECURE = True  # 🔹 En producción, debe ser True
 
-## quitar
+# quitar
 
 INSTALLED_APPS += ["debug_toolbar"]
 MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+
+SESSION_COOKIE_AGE = 3600
+SESSION_SAVE_EVERY_REQUEST = True
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

@@ -17,11 +17,10 @@ const ActivateAccount = () => {
 
         setMessage(response.data.message);
         setIsAuthenticated(true);
-        setUsername(response.data.username); // 🔹 Guardamos el nombre del usuario
+        setUsername(response.data.username);
         setIsAuthenticated(true);
         setUsername(response.data.username);
 
-        // 🔹 Redirigir a /homepage después de 3 segundos si la activación es exitosa
         setTimeout(() => navigate("/"), 3000);
 
       } catch (error) {

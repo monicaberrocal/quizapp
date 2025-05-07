@@ -5,6 +5,9 @@ import AlertMessage from "../components/AlertMessage";
 import { Link } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
+import TituloEditable from "../components/Tema/TituloEditable";
+import BotonesAccion from "../components/Tema/BotonesAccion";
+
 
 const TemaDetalle = () => {
   const MAX_RESPUESTAS = 10;
@@ -16,6 +19,7 @@ const TemaDetalle = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editando, setEditando] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [nuevoTitulo, setNuevoTitulo] = useState("");
   const [nuevaPregunta, setNuevaPregunta] = useState({
     texto: "",
@@ -363,9 +367,18 @@ const TemaDetalle = () => {
           withCredentials: true,
         }
       );
+      const data = response.data;
 
       setShowGenerateModal(false);
-      setArchivoSeleccionado(null); // 📌 Resetear el estado
+      setArchivoSeleccionado(null);
+
+      if (!data.success) {
+        setError(`${data.message} Te quedan ${data.credits} caracteres.`);
+      } else {
+        setSuccessMessage(
+          "Se están generando las preguntas. Te enviaremos un email cuando el proceso termine."
+        );
+      }
       fetchTema();
     } catch (error) {
       setError("Error al importar preguntas.");
@@ -566,96 +579,30 @@ const TemaDetalle = () => {
       {error && (
         <AlertMessage message={error} setMessage={setError} type="danger" />
       )}
-      <div className="position-relative d-flex align-items-center justify-content-between">
-        {/* 📌 Botón para regresar a la asignatura (pegado a la izquierda) */}
-        {loading ? (
-          <button
-            className="btn i-menu i-orange d-flex align-items-center"
-            disabled
-          >
-            <i className="bi bi-arrow-left"></i>
-            <span className="d-none d-md-inline ms-2">Cargando...</span>
-          </button>
-        ) : (
-          <Link
-            to={`/asignaturas/${tema.asignatura_id}`}
-            className="btn i-menu i-orange d-flex align-items-center"
-          >
-            <i className="bi bi-arrow-left"></i>
-            <span className="d-none d-md-inline ms-2">
-              Volver a {tema ? tema.asignatura_nombre : ""}
-            </span>
-          </Link>
-        )}
+      {successMessage && (
+        <AlertMessage message={successMessage} setMessage={setSuccessMessage} type="success"/>
+      )}
 
-        {/* 📌 Contenedor central con título e icono de editar (centrado absolutamente) */}
-        <div className="position-absolute start-50 translate-middle-x d-flex align-items-center">
-          {editando ? (
-            <input
-              type="text"
-              className="form-control text-center fw-bold"
-              value={nuevoTitulo}
-              onChange={(e) => setNuevoTitulo(e.target.value)}
-              style={{ maxWidth: "600px" }}
-            />
-          ) : (
-            <h2 className="mb-0 text-center">{tema ? tema.nombre : ""}</h2>
-          )}
+      <TituloEditable
+        tema={tema}
+        editando={editando}
+        setEditando={setEditando}
+        nuevoTitulo={nuevoTitulo}
+        setNuevoTitulo={setNuevoTitulo}
+        handleActualizarTitulo={handleActualizarTitulo}
+        loading={loading}
+        handleOpenTemaModal={handleOpenTemaModal}
+      />
 
-          <button
-            className="btn i-menu i-orange ms-2"
-            onClick={
-              editando ? handleActualizarTitulo : () => setEditando(true)
-            }
-          >
-            {loading ? (
-              ""
-            ) : editando ? (
-              <i className="bi bi-check-lg"></i>
-            ) : (
-              <i className="bi bi-pencil-square"></i>
-            )}
-          </button>
-        </div>
-
-        {/* 📌 Botón para eliminar el tema (pegado a la derecha) */}
-        <i
-          className="bi bi-trash3-fill i-orange px-3 i-menu btn"
-          style={{ cursor: "pointer", fontSize: "1.2rem" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleOpenTemaModal(tema);
-          }}
-        ></i>
-      </div>
       <hr />
 
-      <div className="d-flex justify-content-center gap-4">
-        {/* 📌 Botón para importar preguntas */}
-        <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowImportModal(true)}
-        >
-          <i className="bi bi-upload"></i> Importar Preguntas
-        </button>
+      <BotonesAccion
+        tema={tema}
+        setShowImportModal={setShowImportModal}
+        setShowGenerateModal={setShowGenerateModal}
+        setShowExportModal={setShowExportModal}
+      />
 
-        {/* 📌 Botón para generar preguntas */}
-        <button
-          className="btn btn-outline-primary magic-button"
-          onClick={() => setShowGenerateModal(true)}
-        >
-          <i className="fa-solid fa-wand-magic-sparkles magic-icon"></i> GENERAR
-          preguntas para el tema{" "}
-          <span className="name-bold-naranja">{tema?.nombre}</span>
-        </button>
-        {/* 📌 Botón para exportar tema */}
-        {/* <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowExportModal(true)}
-        >
-          <i className="bi bi-download"></i> Exportar Tema
-        </button> */}
-      </div>
 
       {/* 📌 Contenedor de botones centrados */}
       <div className="d-flex flex-column justify-content-center align-items-center gap-3 mt-3">

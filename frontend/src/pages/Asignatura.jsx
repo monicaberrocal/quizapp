@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../api";
 import AlertMessage from "../components/AlertMessage";
 import { useNavigate } from "react-router-dom";
+import AsignaturaHeader from "../components/Asignatura/AsignaturaHeader";
 
 const AsignaturaDetalle = () => {
   const { asignaturaId } = useParams();
@@ -84,7 +85,7 @@ const AsignaturaDetalle = () => {
     setShowModal(true);
   };
 
-  const navigate = useNavigate(); // 📌 Hook para redirigir
+  const navigate = useNavigate();
 
   const handleDeleteAsignatura = async () => {
     if (!asignaturaAEliminar) return;
@@ -97,7 +98,6 @@ const AsignaturaDetalle = () => {
         withCredentials: true,
       });
 
-      // 📌 Cerrar modal antes de redirigir
       setShowModal(false);
       setAsignaturaAEliminar(null);
       navigate("/asignaturas");
@@ -212,17 +212,17 @@ const AsignaturaDetalle = () => {
         mimeType = "text/plain";
       }
 
-      // 📌 Crear un Blob con los datos descargados
+      // Crear un Blob con los datos descargados
       const blob = new Blob([response.data], { type: mimeType });
 
-      // 📌 Crear un enlace de descarga y hacer clic en él
+      // Crear un enlace de descarga y hacer clic en él
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = filename;
       document.body.appendChild(link);
       link.click();
 
-      // 📌 Limpiar el enlace después de la descarga
+      // Limpiar el enlace después de la descarga
       document.body.removeChild(link);
 
       setIsProcessing(false);
@@ -239,63 +239,18 @@ const AsignaturaDetalle = () => {
       {error && (
         <AlertMessage message={error} setMessage={setError} type="danger" />
       )}
-      <div className="d-flex justify-content-between align-items-center">
-        {/* 📌 Botón para regresar a la lista de asignaturas */}
-        <Link to="/asignaturas" className="btn i-menu i-orange">
-          <i className="bi bi-arrow-left"></i>
-          <span className="d-none d-md-inline ms-2">Volver a asignaturas</span>
-        </Link>
-
-        {/* 📌 Contenedor del título editable */}
-        <div className="position-absolute start-50 translate-middle-x d-flex align-items-center">
-          {editando ? (
-            <input
-              type="text"
-              className="form-control text-center fw-bold"
-              value={nuevoTitulo}
-              onChange={(e) => setNuevoTitulo(e.target.value)}
-              style={{ maxWidth: "400px" }}
-            />
-          ) : (
-            <h2 className="text-center mb-0">
-              {asignatura ? asignatura.nombre : ""}
-            </h2>
-          )}
-
-          <button
-            className="btn i-menu i-orange ms-2"
-            onClick={
-              editando ? handleActualizarTitulo : () => setEditando(true)
-            }
-          >
-            {asignatura ? (
-              <>
-                {editando ? (
-                  <i className="bi bi-check-lg"></i>
-                ) : (
-                  <i className="bi bi-pencil-square"></i>
-                )}
-              </>
-            ) : (
-              ""
-            )}
-          </button>
-        </div>
-
-        {/* 📌 Botón para eliminar la asignatura */}
-        <i
-          className="bi bi-trash3-fill i-orange px-3 i-menu btn"
-          style={{ cursor: "pointer", fontSize: "1.2rem" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleOpenAsignaturaModal(asignatura);
-          }}
-        ></i>
-      </div>
+      <AsignaturaHeader
+        asignatura={asignatura}
+        editando={editando}
+        nuevoTitulo={nuevoTitulo}
+        setNuevoTitulo={setNuevoTitulo}
+        setEditando={setEditando}
+        handleActualizarTitulo={handleActualizarTitulo}
+        handleOpenAsignaturaModal={handleOpenAsignaturaModal}
+      />
 
       <hr />
 
-      {/* 📌 Contenedor de botones centrados */}
       <div className="d-flex flex-column justify-content-center align-items-center gap-3 mt-3">
         <div className="d-flex justify-content-center align-items-center gap-3">
           {asignatura && asignatura.tiene_preguntas && (
@@ -326,25 +281,7 @@ const AsignaturaDetalle = () => {
         )}
       </div>
 
-      {/* <div className="d-flex justify-content-center gap-4"> */}
-      {/* 📌 Botón para importar temas */}
-      {/* <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowImportModal(true)}
-        >
-          <i className="bi bi-upload"></i> Importar Temas
-        </button> */}
-
-      {/* 📌 Botón para exportar asignatura */}
-      {/* <button
-          className="btn btn-outline-primary"
-          onClick={() => setShowExportModal(true)}
-        >
-          <i className="bi bi-download"></i> Exportar Asignatura
-        </button>
-      </div> */}
-
-      {/* 📌 Formulario para crear un nuevo tema */}
+      {/* Formulario para crear un nuevo tema */}
       <form onSubmit={handleCreateTema} className="my-4">
         <div className="input-group">
           <input
@@ -364,7 +301,7 @@ const AsignaturaDetalle = () => {
         <p className="text-center">Cargando asignatura...</p>
       ) : (
         <>
-          {/* 📌 Lista de temas */}
+          {/* Lista de temas */}
           {temas.length === 0 ? (
             <p className="text-muted text-center">
               No hay temas en esta asignatura.
@@ -393,12 +330,11 @@ const AsignaturaDetalle = () => {
           )}
         </>
       )}
-      {/* 📌 Modal de Importación */}
+      {/* Modal de Importación */}
       {showImportModal && (
         <div className="modal-backdrop fade-in">
           <div className="custom-modal">
             <div className="modal-content shadow-lg p-4 rounded animate-modal">
-              {/* Botón de cierre */}
               <button
                 className="close-button"
                 onClick={() => setShowImportModal(false)}
@@ -457,7 +393,7 @@ const AsignaturaDetalle = () => {
         </div>
       )}
 
-      {/* 📌 Modal de Exportación */}
+      {/* Modal de Exportación */}
       {showExportModal && (
         <div className="modal-backdrop fade-in">
           <div className="custom-modal">
@@ -473,7 +409,7 @@ const AsignaturaDetalle = () => {
                 Exportar Asignatura
               </h4>
               {isProcessing ? (
-                // 📌 Loader mientras se espera la respuesta
+                // Loader mientras se espera la respuesta
                 <div className="text-center">
                   <div
                     className="spinner-border text-primary"

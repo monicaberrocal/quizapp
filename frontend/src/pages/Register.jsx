@@ -70,6 +70,7 @@ const Register = () => {
             onChange={handleChange}
             className={"col-md-6 mb-3"}
             />
+            
             <InputField
             label="Apellido"
             type="text"

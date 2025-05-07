@@ -12,6 +12,7 @@ const Estudiar = () => {
   const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [mostrarPregunta, setMostrarPregunta] = useState(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,17 +31,18 @@ const Estudiar = () => {
 
   const fetchPreguntas = async () => {
     try {
-      const response = await api.get(
-        `/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      setLoading(true);
+      const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
+        withCredentials: true,
+      });
       setPreguntas(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   const handleSeleccionarRespuesta = (respuestaId, esCorrecta) => {
     setRespuestaSeleccionada({ id: respuestaId, correcta: esCorrecta });
@@ -78,9 +80,14 @@ const Estudiar = () => {
     setMostrarPregunta(false);
   };
 
-  if (!preguntas.length) {
-    return <div>No hay preguntas disponibles</div>;
+  if (loading) {
+    return <div className="text-center mt-5">Cargando preguntas...</div>;
   }
+  
+  if (!preguntas.length) {
+    return <div className="text-center mt-5">No hay preguntas disponibles</div>;
+  }
+  
 
   const preguntaActual = preguntas[preguntaActualIndex];
 

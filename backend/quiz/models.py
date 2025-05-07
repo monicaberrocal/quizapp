@@ -1,7 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
+from django.utils import timezone
+from datetime import timedelta
+
+MAX_CHARACTERS_PER_MONTH = 200_000
 
 class Asignatura(models.Model):
     nombre = models.CharField(max_length=100)
@@ -43,3 +47,25 @@ class CodigoActivacion(models.Model):
     token_activacion = models.UUIDField(default=uuid.uuid4, unique=True)
     token_expira = models.DateTimeField(default=default_expiration)
 
+class OpenAIUsage(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="openai_usage")
+    character_count = models.IntegerField(default=0)
+    last_reset = models.DateTimeField(auto_now_add=True)
+
+    def reset_if_needed(self):
+        now = timezone.now()
+        if now - self.last_reset > timedelta(days=30):
+            self.character_count = 0
+            self.last_reset = now
+            self.save()
+
+    def can_use(self, characters):
+        self.reset_if_needed()
+        return (self.character_count + characters) <= MAX_CHARACTERS_PER_MONTH
+    
+    def left_use(self):
+        return MAX_CHARACTERS_PER_MONTH - self.character_count
+
+    def add_characters(self, characters):
+        self.character_count += characters
+        self.save()

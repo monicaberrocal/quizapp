@@ -1,84 +1,61 @@
-from .pdf_extractors import extract_text_combined
-from .question_generation import *
-from ..models import Pregunta, Respuesta
 import re
-import traceback
+from textwrap import dedent
 
-def procesar_pdf(tema, file, client, model):
-    print("dentro de procesar")
-    texto = extraer_texto_pdf(file, client, model)
-    preguntas_json = generar_bateria_completa(texto, client, model)
-    importar_preguntas_json(preguntas_json, tema)
+from ..models import Pregunta, Respuesta
+
+from .pdf_extractors import extract_all_text_versions
+from .question_generation import generate_questions_json
+
+PAGE_SEPARATOR = '-¿!11441165473941=(-'
+
+def process_pdf(tema, file, client, model):
+    text = extract_clean_text_from_pdf(file, client, model)
+    questions_json = generate_question_set(text, client, model)
+    import_questions_from_json(questions_json, tema)
     
-def extraer_texto_pdf(file, client, model):
-    text_pymupdf, text_pdfplumber, text_pypdf2, text_pdfminer = extract_text_combined(file)
+def extract_clean_text_from_pdf(file, client, model):
+    text_pymupdf, text_pdfplumber, text_pypdf2, text_pdfminer = extract_all_text_versions(file)
 
-    respuesta = ''
+    clean_text = ''
+    
+    pages_number = max(len(text_pymupdf), len(text_pdfplumber), len(text_pypdf2), len(text_pdfminer))
 
-    for i in range(len(text_pdfminer)):
-        text = '-¿!11441165473941=(-' + text_pymupdf[i] + '-¿!11441165473941=(-' + text_pdfplumber[i] + '-¿!11441165473941=(-' + \
-            text_pypdf2[i] + '-¿!11441165473941=(-' + \
-            text_pdfminer[i]  # + '-¿!11441165473941=(-' + text_tesseract[i]
+    for i in range(pages_number):
+        parts = []
+        for extractor in [text_pymupdf, text_pdfplumber, text_pypdf2, text_pdfminer]:
+            parts.append(extractor[i] if i < len(extractor) else "")
+        text = PAGE_SEPARATOR.join(parts)
+        
+        prompt = dedent("""
+                    He usado 5 librerías para extraer el texto de un pdf. 
+                    Los 4 resultados son los siguientes.
+                    Necesito que me des un texto limpio final usando la información de las 4 extracciones.
+                    No escribas nada más que el texto limpio final.
+                    La separación entre texto y texto es: '""" + PAGE_SEPARATOR + """'
+                """)
+
         try:
             response = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system",
-                        "content": "He usado 5 librerías para extraer el texto de un pdf. Los 4 resultados son los siguientes. Necesito que me des un texto limpio final usando la información de las 4 extracciones. No escribas nada más que el texto limpio final. La separación entre texto y texto es: '-¿!11441165473941=(-'"},
+                    {"role": "system", "content": prompt},
                     {"role": "user", "content": text},
                 ],
-                temperature=0.7
+                temperature=0
             )
-            respuesta += response.choices[0].message.content
+            clean_text += response.choices[0].message.content
         except Exception as e:
-            print(e)
             raise
             
-    return respuesta
+    return clean_text
 
-def generar_bateria_completa(temario_texto, client, model):
-    # Paso 1: Análisis del temario
-    # apartados = analizar_temario(temario_texto, client, model)
-    
-    apartados = dividir_por_apartados(temario_texto)
-    
-    # Paso 2: Generar 20 preguntas por cada apartado en el formato JSON solicitado    
-    preguntas_generadas = generar_preguntas_json(temario_texto, apartados, client, model, 20)
-
-    # Paso 3: Analizar la cobertura del temario
-    # apartados_no_cubiertos = analizar_cobertura(temario_texto, preguntas_generadas, client, model)
-
-    # Paso 4: Generar 10 preguntas adicionales para temas no cubiertos
-    # preguntas_adicionales = generar_preguntas_json(temario_texto, apartados_no_cubiertos, client, model, 20)
-
-    # Unir las preguntas originales con las adicionales
-    # preguntas_generadas.extend(preguntas_adicionales)
-    
-    return {"preguntas": preguntas_generadas}
-
-def importar_preguntas_json(tema_data, tema):
-    # 📌 Crear las preguntas
-    for pregunta_data in tema_data["preguntas"]:
-        pregunta = Pregunta.objects.create(
-            texto=pregunta_data["texto"],
-            ayuda=pregunta_data.get("ayuda", ''),
-            tema=tema
-        )
-
-        # 📌 Crear las respuestas
-        respuestas_formatted = []
-        for idx, respuesta_data in enumerate(pregunta_data["respuestas"]):
-            respuesta = Respuesta.objects.create(
-                texto=respuesta_data["texto"],
-                pregunta=pregunta
-            )
-            respuestas_formatted.append(respuesta)
-
-        pregunta.respuesta_correcta = respuestas_formatted[0]
-        pregunta.save()
+def generate_question_set(text, client, model):
+    sections = split_by_sections(text) 
+    question_set = generate_questions_json(sections, client, model)
+    return {"preguntas": question_set}
         
-def dividir_por_apartados(texto):
-    patrones_titulo = re.compile(
+def split_by_sections(text):
+    heading_patterns = re.compile(
         r'''^(
             BLOQUE\s+\w+ |                      # Coincide con encabezados como 'BLOQUE I', 'BLOQUE II', etc.
             Bloque\s+\w+ |
@@ -99,68 +76,55 @@ def dividir_por_apartados(texto):
         re.MULTILINE | re.VERBOSE
     )
 
-    secciones = []
-    indices = [m.start() for m in patrones_titulo.finditer(texto)]
+    indexes = [m.start() for m in heading_patterns.finditer(text)]
     
-    if not indices:
-        return [texto]  # No se encontraron títulos
+    if not indexes:
+        return [text]
 
-    # Añadir el final del texto como último índice
-    indices.append(len(texto))
-
-    # for i in range(len(indices)-1):
-    #     seccion = texto[indices[i]:indices[i+1]].strip()
-    #     if seccion:
-    #         secciones.append(seccion)
-
-    # return secciones
-
-    # Dividir en bloques preliminares
-    # bloques = []
-    # for i in range(len(indices) - 1):
-    #     bloque = texto[indices[i]:indices[i + 1]].strip()
-    #     if bloque:
-    #         bloques.append(bloque)
-
-    # # Fusionar bloques que son solo una línea con el siguiente
-    # secciones = []
-    # skip_next = False
-    # for i in range(len(bloques)):
-    #     if skip_next:
-    #         skip_next = False
-    #         continue
-
-    #     lineas = bloques[i].splitlines()
-    #     if len(lineas) <= 1 and i + 1 < len(bloques):
-    #         # Fusionar con el siguiente bloque
-    #         fusionado = bloques[i] + "\n" + bloques[i + 1]
-    #         secciones.append(fusionado)
-    #         skip_next = True
-    #     else:
-    #         secciones.append(bloques[i])
-
-    # return secciones
+    indexes.append(len(text))
     
-    bloques = [texto[indices[i]:indices[i+1]].strip() for i in range(len(indices)-1)]
+    blocks = [text[indexes[i]:indexes[i+1]].strip() for i in range(len(indexes)-1)]
 
-    def es_bloque_vacio(bloque):
-        """True si el bloque no tiene contenido real más allá del título."""
-        lineas = bloque.splitlines()
-        return not any(len(linea.strip()) > 5 for linea in lineas[1:])
+    def is_empty_block(bloque):
+        lines_of_block = bloque.splitlines()
+        return not any(len(line.strip()) > 5 for line in lines_of_block[1:])
 
-    def procesar_bloques(bloques, acumulador=""):
-        if not bloques:
-            return [acumulador.strip()] if acumulador.strip() else []
+    def process_blocks(blocks, accumulator=""):
+        if not blocks:
+            return [accumulator.strip()] if accumulator.strip() else []
 
-        bloque_actual = bloques[0]
-        resto = bloques[1:]
+        current_block = blocks[0]
+        remaining_blocks = blocks[1:]
 
-        if es_bloque_vacio(bloque_actual):
-            # Acumular y seguir
-            return procesar_bloques(resto, acumulador + "\n" + bloque_actual)
+        if is_empty_block(current_block):
+            return process_blocks(remaining_blocks, accumulator + "\n" + current_block)
         else:
-            # Este sí tiene contenido, devolver lo acumulado + continuar
-            seccion = (acumulador + "\n" + bloque_actual).strip()
-            return [seccion] + procesar_bloques(resto)
+            section = (accumulator + "\n" + current_block).strip()
+            return [section] + process_blocks(remaining_blocks)
+    
+    def estimate_questions(text, ratio = 65):
+        questions_by_lines = text.count('\n') * 2
+        questions_by_characters = len(text) // ratio
+        return max(questions_by_lines, questions_by_characters)
 
-    return procesar_bloques(bloques)
+    processed_blocks = process_blocks(blocks)
+    return [(section, estimate_questions(section)) for section in processed_blocks]
+
+def import_questions_from_json(tema_data, tema):
+    for question_data in tema_data["preguntas"]:
+        pregunta = Pregunta.objects.create(
+            texto=question_data["texto"],
+            ayuda=question_data.get("ayuda", ''),
+            tema=tema
+        )
+
+        formatted_answers = []
+        for answer_data in question_data["respuestas"]:
+            respuesta = Respuesta.objects.create(
+                texto=answer_data["texto"],
+                pregunta=pregunta
+            )
+            formatted_answers.append(respuesta)
+
+        pregunta.respuesta_correcta = formatted_answers[0]
+        pregunta.save()

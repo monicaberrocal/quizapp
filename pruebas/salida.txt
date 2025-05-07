@@ -1,0 +1,182 @@
+['3 
+ 
+BLOQUE I. FISIOLOGÍA DE LA AUDICIÓN HUMANA 
+TEMA 1. ESTUDIO FÍSICO DEL SONIDO 
+1. FUENTE SONORA VIBRANTE 
+Para la generación del sonido primero tenemos una fuente sonora vibrante, después de dicha fuente 
+tenemos un medio de propagación y por último un receptor sonoro adecuado. 
+Las ondas sonoras son aquellas que, tras pasar por nuestro sistema auditivo, se convierte en información 
+que el cerebro descodifica. Son ondas mecánicas de presión que se propagan en un medio elástico 
+y denso. Necesitan un medio material (aire, agua, metal…) transmisor de la vibración. 
+ 
+ 
+ 
+ 
+En reposo, las partículas están distribuidas homogéneamente, es decir, están en movimiento en todas 
+las direcciones. 
+Los tipos de desplazamientos de las ondas sonoras son: 
+- 
+Desplazamientos longitudinales: la dirección de desplazamiento es igual a la del medio. 
+- 
+Desplazamientos tridimensionales. 
+ 
+1.1. 
+Cualidades esenciales de las ondas sonoras 
+ 
+a) FRECUENCIA / TONO 
+Es la cantidad de vibraciones por segundo de una partícula. Su unidad de medida son los herzios (Hz). 
+- 
+Frecuencia baja → sonido grave  
+- 
+Frecuencia alta → sonido agudo  
+El ser humano percibe entre los 20 – 20.000 Hz, pero nuestro oído tiene el rango óptimo entre los 1000 – 
+3000 Hz. 
+b) AMPLITUD / INTENSIDAD 
+Es el grado de movimiento de las moléculas de aire que 
+componen una onda. Se mide dibujando una línea 
+horizontal en el centro de la onda y, a ambos lados, la 
+amplitud de la onda es la misma. A mayor distancia, 
+mayor es la amplitud y mejor se va a oír el sonido; y 
+viceversa.  
+Existen dos tipos de amplitud: 
+- 
+ Presión acústica (PA): es la intensidad recibida y se mide en pascales, pero como la voz 
+humana ejerce una presión muy pequeña se usan los decibelios (dB) como unidad de medida.  
+- 
+Nivel de presión sonora (SPL): es la intensidad percibida, lo que hace que haya una variabilidad 
+de la intensidad recibida. Depende de las características del aparato auditivo, la distancia 
+entre el foco y el receptor, de la amplitud del foco y del medio en el que se propaga. 
+', '4 
+ 
+La intensidad objetiva es el movimiento del aire provocado por ondas sonoras, lo que provoca 
+variaciones en la presión originando zonas de mayor densidad (concentración) y zonas de menor 
+densidad (rarefacción). 
+Un sonido va definido por su amplitud y su frecuencia, de esta forma distinguimos dos tipos de sonidos: 
+- 
+Tonos simples: es una única onda sinusoidal, es decir, una sola frecuencia. No se encuentra en 
+la naturaleza y se caracteriza por su amplitud y frecuencia. Ejemplo: diapasón  
+- 
+Tonos complejos: son la unión de varias ondas sinusoidales que se perciben como un único 
+sonido. Son sonidos habituales y se caracterizan por su amplitud y frecuencia, pero en este caso 
+habrá muchas amplitudes y frecuencias. Dentro de las frecuencias podemos distinguir entre: 
+➢ Frecuencia fundamental: es la frecuencia más grave, el origen de los sobretonos y 
+generalmente presentan la máxima amplitud. 
+➢ Sobretonos / armónicos: provienen de la fundamental y generalmente presentan una 
+amplitud menos a la frecuencia fundamental. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Por otro lado, tenemos una modificación de la sensación acústica y en función a los números o 
+intensidad o tipo de armónicos podemos observar:  
+- 
+Un sonido cálido: que tiene un número elevado de armónicos. 
+- 
+Un sonido áspero: que tiene armónicos muy agudos. 
+El ruido son ondas no periódicas con distancia irregular, por ello el cerebro lo detecta como 
+desagradable. 
+c) TIMBRE 
+Es el conjunto de frecuencias / sobretonos que caracterizan a un sonido complejo. Este permite 
+diferenciar sonidos con igual intensidad y frecuencia fundamental. 
+Se produce en la caja de resonancia donde se crean los armónicos, donde unos se potenciarán 
+oyéndose mejor y otros se eliminarán. 
+d) DURACIÓN  
+Cuanto mayor es la duración, mayor velocidad tiene el sonido; y viceversa. 
+ 
+ 
+ 
+ 
+ 
+', '5 
+ 
+2. MEDIO DE PROPAGACIÓN 
+El medio de propagación es el conjunto de partículas capaces de entrar en vibración tras recibir una 
+fuerza. Para que un medio propague el sonido deber tener: 
+- 
+Masa (peso): no hay transmisión de materia, sino de vacío. 
+- 
+Inercia: propiedad de permanecer en reposo o en movimiento. 
+- 
+Elasticidad: capacidad de recuperar la posición inicial tras el movimiento. 
+Para la propagación del sonido, también es importante la velocidad: cuando más denso el medio, 
+más velocidad y cuanto menos denso, tengo menos velocidad. El sonido se propaga más rápido en 
+sólido y más lento en líquido y gas. 
+2.1. 
+Factores que afectan a la propagación del sonido 
+a) REFLEXIÓN, ECO Y REVERBERACIÓN 
+La reflexión es el fenómeno que ocurre cuando una onda sonora choca contra un obstáculo que no 
+puede traspasar ni rodear.  
+Ley de Snell: el ángulo del rayo incidente es el mismo que el del rayo reflejado 
+y ambos están en el mismo medio. 
+ 
+El eco es la repetición del sonido producida por la reflexión del sonido en un objeto. Existe un tiempo 
+de recepción con ida y vuelta donde se distinguen como sonidos diferentes, un retardo de 100 
+milisegundos, cada vez el sonido se va haciendo más débil y para que exista eco debe haber como 
+mínimo 30 metros de distancia con la fuente que produce el sonido. Entre sus aplicaciones podemos 
+destacar: 
+- 
+Ecografía 
+- 
+Radar 
+- 
+Sonar: es lo mismo que el radar, pero en el agua. 
+- 
+Integridad estructural 
+La reverberación es la suma total de las reflexiones del sonido que llegan al lugar del oyente en 
+diferentes momentos del tiempo. La diferencia entre ECO y reverberación es la distancia.  
+b) REFRACCIÓN 
+Es el fenómeno que ocurre cuando una onda cambia su velocidad y dirección al pasar de un medio 
+a otro con distinta densidad. En este caso, la Ley de Snell se cumple de diferente forma que con la 
+reflexión ya que el ángulo del rayo incidente y reflejado y la densidad del medio son distintos. 
+ 
+ 
+ 
+ 
+ 
+ 
+', '6 
+ 
+c) ABSORCIÓN 
+Es la cantidad de energía que se disipa cuando una onda contacta con un determinado material. 
+Podemos diferenciar varios tipos de materiales absorbentes: 
+- 
+Materiales resonantes: tienen puntos de máxima absorción a una determinada frecuencia. 
+- 
+Materiales porosos: absorben más sonido conforme va aumentando la frecuencia. 
+- 
+Absorbentes en forma de panel: absorben frecuencias bajas. 
+A parte de estos materiales también existe una atenuación por absorción del aire, donde parte de la 
+energía acústica se transforma en calor. Esto depende de la frecuencia, la temperatura y la humedad. 
+d) RESONANCIA 
+Se produce cuando la vibración de un objeto hace que vibre otro objeto sin contacto. La frecuencia 
+de vibración debe ser similar en todo momento, aunque si el objeto vibrante no para, el otro empezará 
+a acumular energía y puede llegar a romperse. A parte también consta de una amplitud de oscilación 
+dependiente del tiempo y esto produce la destrucción. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+e) EFECTO DOPPLER 
+Es el aparente cambio de frecuencia de una onda sonora producida por el movimiento de la fuente 
+con respecto al observador o viceversa.  
+• 
+Frecuencia emitida = Frecuencia percibida > emisor estático 
+• 
+Frecuencia emitida ≠ Frecuencia percibida > emisor en movimiento lento  
+• 
+Frecuencia emitida ≠ Frecuencia percibida > emisor en movimiento rápido 
+• 
+Frecuencia emitida ≠ Frecuencia percibida > emisor supera la velocidad del sonido  
+ 
+ 
+ 
+']
