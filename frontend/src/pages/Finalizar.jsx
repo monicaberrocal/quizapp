@@ -1,17 +1,18 @@
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import api from "../api"
-import LoadingScreen from "../components/LoadingScreen"
+import LoadingScreen from "../components/LoadingScreen";
 
 const Finalizar = () => {
+  const { testId } = useParams();
   const [resultados, setResultados] = useState(null)
-  const { tipo, filtro, id } = useParams();
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchResultados = async () => {
       try {
-        const response = await api.get(`/finalizar_test?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
+        const response = await api.get(`/finalizar_test/${testId}`, {
           withCredentials: true,
         })
         setResultados(response.data)
@@ -21,11 +22,11 @@ const Finalizar = () => {
     }
 
     fetchResultados()
-  }, [tipo, filtro, id])
+  }, [testId])
 
   if (!resultados) {
     return (
-      LoadingScreen("Cargando los resultados")
+      LoadingScreen("Cargando resultados")
     )
   }
 

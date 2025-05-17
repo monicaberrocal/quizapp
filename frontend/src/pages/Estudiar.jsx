@@ -9,22 +9,20 @@ import "../assets/css/styles_test.css";
 const Estudiar = () => {
   const [csrfToken, setCsrfToken] = useState("");
   const { tipo, filtro, id } = useParams();
-  const [preguntaActual, setPreguntaActual] = useState(null);
-  // const [preguntas, setPreguntas] = useState([]);
-  // const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [mostrarPregunta, setMostrarPregunta] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [processingContinue, setProcessingContinue] = useState(false);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   fetchPreguntas();
-  //   fetchCsrfToken();
-  // }, [tipo, filtro, id]);
+  const [preguntaActual, setPreguntaActual] = useState(null);
+  const [preguntaSiguiente, setPreguntaSiguiente] = useState(null);
+  const [testId, setTestId] = useState(null);
+  const [totalPreguntas, setTotalPreguntas] = useState(0);  
 
   useEffect(() => {
+    fetchPreguntas();
     fetchCsrfToken();
-    fetchPregunta();
   }, [tipo, filtro, id]);
 
   const fetchCsrfToken = async () => {
@@ -36,91 +34,46 @@ const Estudiar = () => {
     }
   };
 
-  // const fetchPreguntas = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
-  //       withCredentials: true,
-  //     });
-  //     setPreguntas(response.data);
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const fetchPregunta = async () => {
+  const fetchPreguntas = async () => {
     try {
       setLoading(true);
-      const response = await api.get(
-        `/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`,
-        { withCredentials: true },
-      );
-      setPreguntaActual({
-        ...response.data.pregunta,
-        numero_actual: response.data.numero_actual,
-        total: response.data.total,
+      const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
+        withCredentials: true,
       });
+      setPreguntaActual(response.data.pregunta_actual)
+      setTotalPreguntas(response.data.total)
+      setTestId(response.data.test_id)
     } catch (error) {
-      console.error("Error al cargar pregunta", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleSeleccionarRespuesta = (respuestaId, esCorrecta) => {
     setRespuestaSeleccionada({ id: respuestaId, correcta: esCorrecta });
   };
 
-  // const handleSiguientePregunta = () => {
-  //   setRespuestaSeleccionada(null);
-  //   setMostrarPregunta(true);
-  //   if (preguntaActualIndex < preguntas.length - 1) {
-  //     setPreguntaActualIndex(preguntaActualIndex + 1);
-  //   } else {
-  //     navigate(`/finalizar/${tipo}/${filtro}/${id}`);
-  //   }
-  // };
-
   const handleSiguientePregunta = () => {
     setRespuestaSeleccionada(null);
     setMostrarPregunta(true);
-    fetchPregunta();
+    setPreguntaActual(preguntaSiguiente)
+    setPreguntaSiguiente(null)
+    if (preguntaActual.indice >= totalPreguntas - 1) {
+      navigate(`/finalizar/${testId}`);
+    }
   };
 
-  // const handleEnviarRespuesta = async () => {
-  //   try {
-  //     await api.post(
-  //       `/estudiar/?tipo=${tipo}&filtro=${filtro}&id=${id}`,
-  //       {
-  //         pregunta_id: preguntaActual.id,
-  //         respuesta_id: respuestaSeleccionada?.id,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "X-CSRFToken": csrfToken,
-  //         },
-  //         withCredentials: true,
-  //       }
-  //     );
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  //   setMostrarPregunta(false);
-  // };
-
   const handleEnviarRespuesta = async () => {
+    setProcessingContinue(true)
     try {
-      await api.post(
-        `/estudiar/`,
+      const response = await api.post(
+        `/estudiar/?tipo=${tipo}&filtro=${filtro}&id=${id}`,
         {
           pregunta_id: preguntaActual.id,
           respuesta_id: respuestaSeleccionada?.id,
-          tipo,
-          filtro,
-          id,
+          test_id: testId
         },
         {
           headers: {
@@ -128,53 +81,45 @@ const Estudiar = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        },
+        }
       );
+      setPreguntaSiguiente(response.data.pregunta_actual)
       setMostrarPregunta(false);
     } catch (error) {
       console.error(error);
+    } finally{
+      setProcessingContinue(false)
     }
   };
 
   if (loading) {
     return <LoadingScreen mensaje="Cargando preguntas para estudiar..." />;
   }
-
-  // if (!preguntas.length) {
-  //   return <div className="text-center mt-5">No hay preguntas disponibles</div>;
-  // }
-
-  if (!preguntaActual) {
+  
+  
+  if (totalPreguntas === 0 || !preguntaActual) {
     return <div className="text-center mt-5">No hay preguntas disponibles</div>;
   }
-
-  // const preguntaActual = preguntas[preguntaActualIndex];
+  
 
   return (
     <>
       {mostrarPregunta ? (
-        // <PreguntaMostrar
-        //   preguntaActual={preguntaActual}
-        //   preguntaActualIndex={preguntaActualIndex + 1}
-        //   totalPreguntas={preguntas.length}
-        //   handleEnviarRespuesta={() => handleEnviarRespuesta()}
-        //   handleSeleccionarRespuestaSuper={(respuestaId, esCorrecta) =>
-        //     handleSeleccionarRespuesta(respuestaId, esCorrecta)
-        //   }
-        // />
         <PreguntaMostrar
           preguntaActual={preguntaActual}
-          handleEnviarRespuesta={handleEnviarRespuesta}
-          handleSeleccionarRespuestaSuper={handleSeleccionarRespuesta}
+          totalPreguntas={totalPreguntas}
+          handleEnviarRespuesta={() => handleEnviarRespuesta()}
+          handleSeleccionarRespuestaSuper={(respuestaId, esCorrecta) =>
+            handleSeleccionarRespuesta(respuestaId, esCorrecta)
+          }
+          loading={processingContinue}
         />
       ) : (
         <RespuestaMostrar
           pregunta={preguntaActual}
           respuestaSeleccionada={respuestaSeleccionada}
-          handleSiguientePregunta={handleSiguientePregunta}
-          tipo={tipo}
-          filtro={filtro}
-          id={id}
+          handleSiguientePregunta={() => handleSiguientePregunta()}
+          testId={testId}
         />
       )}
     </>

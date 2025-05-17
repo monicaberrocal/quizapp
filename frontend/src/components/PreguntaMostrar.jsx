@@ -1,10 +1,11 @@
 import { useState } from "react";
-import LoadingScreen from "./LoadingScreen";
 
 const PreguntaMostrar = ({
   preguntaActual,
+  totalPreguntas,
   handleEnviarRespuesta,
   handleSeleccionarRespuestaSuper,
+  loading
 }) => {
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
 
@@ -18,76 +19,77 @@ const PreguntaMostrar = ({
       <div className="card border-0 shadow-sm">
         <div className="card-body">
           <h2 className="text-center mb-4">
-            Pregunta {preguntaActual.numero_actual} de {preguntaActual.total}
+            Pregunta {preguntaActual.indice + 1} de {totalPreguntas}
           </h2>
           <div className="progress mb-4" style={{ height: "10px" }}>
             <div
               className="progress-bar bg-naranja-quemado"
               role="progressbar"
               style={{
-                width: `${(preguntaActual.numero_actual / preguntaActual.total) * 100}%`,
+                width: `${(preguntaActual.indice / totalPreguntas) * 100}%`,
               }}
-              aria-valuenow={preguntaActual.numero_actual}
+              aria-valuenow={preguntaActual.indice}
               aria-valuemin="0"
-              aria-valuemax={preguntaActual.total}
+              aria-valuemax={totalPreguntas}
             ></div>
           </div>
           <h3 className="card-title mb-4">{preguntaActual.texto}</h3>
 
           <div className="row g-4">
-              {!preguntaActual || !preguntaActual.respuestas ? (
-                <LoadingScreen mensaje="Cargando respuestas..." />
-              ) : (
-                preguntaActual.respuestas.map((respuesta) => (
-                  <div className="col-md-6" key={respuesta.id}>
-                    <div className="form-check">
-                      <input
-                        type="radio"
-                        id={`respuesta_${respuesta.id}`}
-                        name="respuesta"
-                        value={respuesta.id}
-                        className="form-check-input d-none"
-                        onChange={() =>
-                          handleSeleccionarRespuesta(
-                            respuesta.id,
-                            respuesta.id === preguntaActual.respuesta_correcta,
-                          )
-                        }
-                      />
-                      <label
-                        htmlFor={`respuesta_${respuesta.id}`}
-                        style={{
-                          backgroundColor:
-                            respuestaSeleccionada?.id === respuesta.id
-                              ? "var(--naranja-quemado)"
-                              : "",
-                          color:
-                            respuestaSeleccionada?.id === respuesta.id
-                              ? "white"
-                              : "",
-                        }}
-                        className={`form-check-label-custom respuesta-rectangulo w-100 ${
-                          respuestaSeleccionada?.id === respuesta.id
-                            ? "active"
-                            : ""
-                        }`}
-                      >
-                        {respuesta.texto}
-                      </label>
-                    </div>
-                  </div>
-                ))
-              )}
+            {preguntaActual.respuestas.map((respuesta) => (
+              <div className="col-md-6" key={respuesta.id}>
+                <div className="form-check">
+                  <input
+                    type="radio"
+                    id={`respuesta_${respuesta.id}`}
+                    name="respuesta"
+                    value={respuesta.id}
+                    className="form-check-input d-none"
+                    onChange={() =>
+                      handleSeleccionarRespuesta(
+                        respuesta.id,
+                        respuesta.id === preguntaActual.respuesta_correcta
+                      )
+                    }
+                  />
+                  <label
+                    htmlFor={`respuesta_${respuesta.id}`}
+                    style={{
+                      backgroundColor:
+                        respuestaSeleccionada?.id === respuesta.id
+                          ? "var(--naranja-quemado)"
+                          : "",
+                      color:
+                        respuestaSeleccionada?.id === respuesta.id
+                          ? "white"
+                          : "",
+                    }}
+                    className={`form-check-label-custom respuesta-rectangulo w-100 ${
+                      respuestaSeleccionada?.id === respuesta.id ? "active" : ""
+                    }`}
+                  >
+                    {respuesta.texto}
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="text-center mt-4">
             <button
               type="button"
               className="btn btn-primary btn-lg"
-              disabled={!respuestaSeleccionada}
+              disabled={!respuestaSeleccionada|loading}
               onClick={() => handleEnviarRespuesta()}
             >
-              Continuar
+              {loading
+                ? <span
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                : "Continuar"
+              }
             </button>
           </div>
         </div>

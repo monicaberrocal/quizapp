@@ -69,5 +69,5 @@ urlpatterns += [
 
 urlpatterns += [
     path('estudiar/', QuestionnarieView.as_view(), name='api_preguntas'),
-    path('finalizar_test/', FinalizarTestView.as_view(), name='api_finalizar_test'),
+    path('finalizar_test/<int:test_id>', FinalizarTestView.as_view(), name='api_finalizar_test'),
 ]

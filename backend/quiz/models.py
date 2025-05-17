@@ -70,9 +70,6 @@ class OpenAIUsage(models.Model):
         self.character_count += characters
         self.save()
 
-from django.db import models
-from django.contrib.auth.models import User
-
 class ProgresoTest(models.Model):
     class TipoChoices(models.TextChoices):
         ESTUDIAR = 'estudiar', 'Estudiar'
@@ -80,11 +77,13 @@ class ProgresoTest(models.Model):
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     tipo = models.CharField(max_length=20, choices=TipoChoices.choices)
-    filtro = models.IntegerField()
+    filtro = models.CharField(max_length=10)
+    id_contenido = models.IntegerField(default=0)
     pregunta_actual = models.IntegerField(default=0)
     preguntas_id = models.JSONField()
     respuestas_correctas = models.IntegerField(default=0)
     respondidas = models.JSONField(default=list)
+    totalRespondidas = models.IntegerField(default=0)
     completado = models.BooleanField(default=False)
     finalizado_en = models.DateTimeField(null=True, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
