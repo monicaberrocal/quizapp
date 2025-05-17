@@ -20,6 +20,9 @@ const AsignaturaDetalle = () => {
   const [importFormat, setImportFormat] = useState("json");
   const [exportFormat, setExportFormat] = useState("json");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [isEditing, setEditing] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
   const [temaAEliminar, setTemaAEliminar] = useState(null);
@@ -55,6 +58,7 @@ const AsignaturaDetalle = () => {
   };
 
   const handleActualizarTitulo = async () => {
+    setEditing(true)
     try {
       const response = await api.put(
         `/asignaturas/${asignaturaId}/`,
@@ -72,6 +76,8 @@ const AsignaturaDetalle = () => {
     } catch (error) {
       setError("Error al actualizar el título de la asignatura.");
       fetchAsignaturaDetalle();
+    } finally {
+      setEditing(false)
     }
   };
 
@@ -89,6 +95,7 @@ const AsignaturaDetalle = () => {
 
   const handleDeleteAsignatura = async () => {
     if (!asignaturaAEliminar) return;
+    setDeleting(true)
 
     try {
       await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
@@ -105,12 +112,14 @@ const AsignaturaDetalle = () => {
       console.error("Error al eliminar la asignatura:", error.response?.data);
       setError("Error al eliminar la asignatura.");
       fetchAsignaturaDetalle();
+    } finally {
+      setDeleting(false)
     }
   };
 
   const handleDeleteTema = async () => {
     if (!temaAEliminar) return;
-
+    setDeleting(true)
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
         headers: {
@@ -127,11 +136,13 @@ const AsignaturaDetalle = () => {
     } finally {
       setShowModal(false);
       setTemaAEliminar(null);
+      setDeleting(false)
     }
   };
 
   const handleCreateTema = async (e) => {
     e.preventDefault();
+    setCreating(true);  
     if (!nuevoTema.trim()) return;
 
     try {
@@ -152,6 +163,8 @@ const AsignaturaDetalle = () => {
     } catch (error) {
       setError("Error al crear el tema.");
       fetchAsignaturaDetalle();
+    }finally {
+      setCreating(false);
     }
   };
 
@@ -242,6 +255,7 @@ const AsignaturaDetalle = () => {
       <AsignaturaHeader
         asignatura={asignatura}
         editando={editando}
+        loading={isEditing}
         nuevoTitulo={nuevoTitulo}
         setNuevoTitulo={setNuevoTitulo}
         setEditando={setEditando}
@@ -292,9 +306,9 @@ const AsignaturaDetalle = () => {
             onChange={(e) => setNuevoTema(e.target.value)}
             required
           />
-          <button type="submit" className="btn btn-primary">
-            Agregar
-          </button>
+          <button type="submit" className="btn btn-primary" disabled={creating}>
+              {creating ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Agregar"}
+            </button>
         </div>
       </form>
       {loading ? (
@@ -491,6 +505,7 @@ const AsignaturaDetalle = () => {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowModal(false)}
+                  disabled={isDeleting}
                 >
                   Cancelar
                 </button>
@@ -500,8 +515,9 @@ const AsignaturaDetalle = () => {
                   onClick={
                     temaAEliminar ? handleDeleteTema : handleDeleteAsignatura
                   }
+                  disabled={isDeleting}
                 >
-                  Eliminar
+                    {isDeleting ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Eliminar"}
                 </button>
               </div>
             </div>

@@ -78,7 +78,7 @@ def generate_questions_with_openai(prompt, text, client, model, accumulator=0):
                 {"role": "user", "content": text},
             ],
             # response_format={"type": "json_object"},
-            temperature = 0.7
+            temperature=0.7
         )
         if not response.choices:
             raise ValueError("Empty response from OpenAI")
@@ -123,7 +123,6 @@ def fix_json_manually(texto, client, model):
         return json.loads(texto_arreglado)
     except json.JSONDecodeError as e:
         return fix_json(texto_arreglado, client, model)
-
 
 def fix_json(invalid_json, client, model, accumulator=0):
     send_log_email(invalid_json)

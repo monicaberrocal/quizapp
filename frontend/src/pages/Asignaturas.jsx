@@ -9,6 +9,8 @@ const Temas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
 
   // Estado para el modal de eliminación
   const [showModal, setShowModal] = useState(false);
@@ -45,6 +47,7 @@ const Temas = () => {
   const handleCreateAsignatura = async (e) => {
     e.preventDefault();
     setError("");
+    setCreating(true);  
 
     try {
       const response = await api.post(
@@ -62,12 +65,14 @@ const Temas = () => {
       // 🔹 Agregar la nueva asignatura con una lista vacía de temas
       setTemasPorAsignatura([
         ...temasPorAsignatura,
-        { asignatura: response.data.nombre, id: response.data.id, temas: [] },
+        { nombre: response.data.nombre, id: response.data.id, temas: [] },
       ]);
       setNombreAsignatura("");
     } catch (error) {
       console.error("Error al crear asignatura:", error.response?.data);
       setError("Error al crear la asignatura.");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -83,6 +88,7 @@ const Temas = () => {
 
   const handleDeleteTema = async () => {
     if (!temaAEliminar) return;
+    setDeleting(true)
 
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
@@ -107,11 +113,13 @@ const Temas = () => {
     } finally {
       setShowModal(false);
       setTemaAEliminar(null);
+      setDeleting(false)
     }
   };
 
   const handleDeleteAsignatura = async () => {
     if (!asignaturaAEliminar) return;
+    setDeleting(true)
 
     try {
       await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
@@ -131,6 +139,7 @@ const Temas = () => {
     } finally {
       setShowModal(false);
       setAsignaturaAEliminar(null);
+      setDeleting(false)
     }
   };
 
@@ -153,9 +162,9 @@ const Temas = () => {
             onChange={(e) => setNombreAsignatura(e.target.value)}
             required
           />
-          <button type="submit" className="btn btn-primary">
-            Agregar
-          </button>
+          <button type="submit" className="btn btn-primary" disabled={creating}>
+              {creating ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Agregar"}
+            </button>
         </div>
       </form>
 
@@ -362,6 +371,7 @@ const Temas = () => {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowModal(false)}
+                  disabled={isDeleting}
                 >
                   Cancelar
                 </button>
@@ -371,9 +381,10 @@ const Temas = () => {
                   onClick={
                     temaAEliminar ? handleDeleteTema : handleDeleteAsignatura
                   }
+                  disabled={isDeleting}
                 >
-                  Eliminar
-                </button>
+                    {isDeleting ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Eliminar"}
+                    </button>
               </div>
             </div>
           </div>

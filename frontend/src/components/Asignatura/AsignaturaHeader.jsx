@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 const AsignaturaHeader = ({
   asignatura,
   editando,
+  loading,
   nuevoTitulo,
   setNuevoTitulo,
   setEditando,
@@ -37,10 +38,12 @@ const AsignaturaHeader = ({
           onClick={
             editando ? handleActualizarTitulo : () => setEditando(true)
           }
+          disabled={loading}
         >
           {asignatura ? (
             editando ? (
-              <i className="bi bi-check-lg"></i>
+              loading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              : <i className="bi bi-check-lg"></i>
             ) : (
               <i className="bi bi-pencil-square"></i>
             )

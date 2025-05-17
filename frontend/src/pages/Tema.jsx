@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import TituloEditable from "../components/Tema/TituloEditable";
 import BotonesAccion from "../components/Tema/BotonesAccion";
 
-
 const TemaDetalle = () => {
   const MAX_RESPUESTAS = 10;
   const MIN_RESPUESTAS = 2;
@@ -34,14 +33,20 @@ const TemaDetalle = () => {
   const [exportFormat, setExportFormat] = useState("json");
   const [isProcessing, setIsProcessing] = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+  const [isEditing, setEditing] = useState(false);
 
   // Estado para el modal de eliminación
   const [showModal, setShowModal] = useState(false);
   const [temaAEliminar, setTemaAEliminar] = useState(null);
   const [preguntaAEliminar, setPreguntaAEliminar] = useState(null);
+  const [isDeleting, setDeleting] = useState(false);
 
   const [editandoPreguntaId, setEditandoPreguntaId] = useState(null);
   const [preguntaEditada, setPreguntaEditada] = useState(null);
+
+  const [loadingButton, setLoadingButton] = useState(false);
+  const [creatingPregunta, setCreatingPregunta] = useState(false);
+  const [editingPregunta, setEditingPregunta] = useState(false);
 
   const navigate = useNavigate();
 
@@ -75,6 +80,7 @@ const TemaDetalle = () => {
   };
 
   const handleActualizarTitulo = async () => {
+    setEditing(true);
     try {
       const response = await api.put(
         `/temas/${temaId}/`,
@@ -85,12 +91,14 @@ const TemaDetalle = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        }
+        },
       );
       setTema({ ...tema, nombre: response.data.nombre });
       setEditando(false);
     } catch (error) {
       setError("Error al actualizar el título del tema.");
+    } finally {
+      setEditing(false);
     }
   };
 
@@ -106,6 +114,7 @@ const TemaDetalle = () => {
 
   const handleCrearPregunta = async (e) => {
     e.preventDefault();
+    setCreatingPregunta(true)
 
     try {
       // 📌 Formatear la estructura de la pregunta antes de enviarla
@@ -139,6 +148,8 @@ const TemaDetalle = () => {
       });
     } catch (error) {
       setError("Error al crear la pregunta.");
+    } finally {
+      setCreatingPregunta(false)
     }
   };
 
@@ -176,7 +187,7 @@ const TemaDetalle = () => {
   const handleEliminarRespuesta = (index) => {
     if (nuevaPregunta.respuestas.length > MIN_RESPUESTAS) {
       const nuevasRespuestas = nuevaPregunta.respuestas.filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       );
       handleChange({
         target: {
@@ -189,6 +200,7 @@ const TemaDetalle = () => {
 
   const handleDeleteTema = async () => {
     if (!temaAEliminar || !tema) return; // 📌 Asegurar que `tema` está definido
+    setDeleting(true);
 
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
@@ -208,11 +220,13 @@ const TemaDetalle = () => {
       fetchTema();
     } finally {
       setTemaAEliminar(null);
+      setDeleting(false);
     }
   };
 
   const handleEliminarPregunta = async () => {
     if (!preguntaAEliminar) return;
+    setDeleting(true);
 
     try {
       await api.delete(`/preguntas/${preguntaAEliminar.id}/`, {
@@ -224,7 +238,9 @@ const TemaDetalle = () => {
 
       // 📌 Corregido: Ahora elimina la pregunta correctamente de la lista
       setPreguntas((prevPreguntas) =>
-        prevPreguntas.filter((pregunta) => pregunta.id !== preguntaAEliminar.id)
+        prevPreguntas.filter(
+          (pregunta) => pregunta.id !== preguntaAEliminar.id,
+        ),
       );
     } catch (error) {
       console.error("Error al eliminar la pregunta:", error.response?.data);
@@ -233,6 +249,7 @@ const TemaDetalle = () => {
     } finally {
       setShowModal(false);
       setPreguntaAEliminar(null);
+      setDeleting(false);
     }
   };
 
@@ -243,6 +260,7 @@ const TemaDetalle = () => {
 
   const handleExportarTema = async () => {
     setIsProcessing(true);
+    setLoadingButton(true);
     try {
       const response = await api.get(
         `/temas/${temaId}/descargar/?formato=${exportFormat}`,
@@ -252,7 +270,7 @@ const TemaDetalle = () => {
           },
           withCredentials: true,
           responseType: "blob", // 📌 Importante: Recibir la respuesta como un archivo
-        }
+        },
       );
 
       let filename =
@@ -290,6 +308,8 @@ const TemaDetalle = () => {
       setError("Error al exportar el tema.");
       setIsProcessing(false);
       setShowExportModal(false);
+    } finally {
+      setLoadingButton(false);
     }
   };
 
@@ -352,21 +372,17 @@ const TemaDetalle = () => {
 
   const handleGenerarPreguntas = async () => {
     if (!archivoSeleccionado) return;
-
+    setLoadingButton(true);
     const formData = new FormData();
     formData.append("archivo", archivoSeleccionado);
 
     try {
-      const response = await api.post(
-        `/temas/${temaId}/generar/`,
-        formData,
-        {
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post(`/temas/${temaId}/generar/`, formData, {
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+        withCredentials: true,
+      });
       const data = response.data;
 
       setShowGenerateModal(false);
@@ -376,18 +392,21 @@ const TemaDetalle = () => {
         setError(`${data.message} Te quedan ${data.credits} caracteres.`);
       } else {
         setSuccessMessage(
-          "Se están generando las preguntas. Te enviaremos un email cuando el proceso termine."
+          "Se están generando las preguntas. Te enviaremos un email cuando el proceso termine.",
         );
       }
       fetchTema();
     } catch (error) {
       setError("Error al importar preguntas.");
       fetchTema();
+    } finally {
+      setLoadingButton(false);
     }
   };
 
   const handleImportarPreguntas = async () => {
     if (!archivoSeleccionado) return;
+    setLoadingButton(true);
 
     const formData = new FormData();
     formData.append("archivo", archivoSeleccionado);
@@ -401,7 +420,7 @@ const TemaDetalle = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        }
+        },
       );
 
       // alert(response.data.message);
@@ -411,6 +430,8 @@ const TemaDetalle = () => {
     } catch (error) {
       setError("Error al importar preguntas.");
       fetchTema();
+    } finally {
+      setLoadingButton(false);
     }
   };
 
@@ -423,7 +444,7 @@ const TemaDetalle = () => {
   const handleEditarRespuestaChange = (index, value) => {
     // Copia profunda del array de respuestas
     const nuevasRespuestas = preguntaEditada.respuestas.map((respuesta, i) =>
-      i === index ? { ...respuesta, texto: value } : { ...respuesta }
+      i === index ? { ...respuesta, texto: value } : { ...respuesta },
     );
 
     setPreguntaEditada({ ...preguntaEditada, respuestas: nuevasRespuestas });
@@ -465,7 +486,7 @@ const TemaDetalle = () => {
     const respuestasEliminadas = preguntaOriginal.respuestas
       .map((respuesta) => {
         const existe = preguntaEditada.respuestas.some(
-          (r) => r.id === respuesta.id
+          (r) => r.id === respuesta.id,
         );
 
         if (existe) return null;
@@ -479,7 +500,7 @@ const TemaDetalle = () => {
     }
 
     const correcta_eliminada = respuestasEliminadas.some(
-      (r) => r.id === preguntaOriginal.respuesta_correcta
+      (r) => r.id === preguntaOriginal.respuesta_correcta,
     );
 
     if (
@@ -521,7 +542,7 @@ const TemaDetalle = () => {
       setPreguntaEditada(null);
       return;
     }
-
+    setEditingPregunta(true)
     try {
       const response = await api.put(
         `/preguntas/${preguntaEditada.id}/`,
@@ -532,14 +553,14 @@ const TemaDetalle = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        }
+        },
       );
 
       // 📌 Actualizar la pregunta en la lista
       setPreguntas(
         preguntas.map((pregunta) =>
-          pregunta.id === preguntaEditada.id ? response.data : pregunta
-        )
+          pregunta.id === preguntaEditada.id ? response.data : pregunta,
+        ),
       );
       console.log("✅ Pregunta actualizada correctamente.");
       setEditandoPreguntaId(null);
@@ -547,12 +568,14 @@ const TemaDetalle = () => {
     } catch (error) {
       console.error(
         "❌ Error al actualizar la pregunta:",
-        error.response?.data
+        error.response?.data,
       );
       console.error(error);
       setError("Error al actualizar la pregunta.");
       setEditandoPreguntaId(null);
       setPreguntaEditada(null);
+    } finally{
+      setEditingPregunta(false)
     }
   };
 
@@ -564,7 +587,7 @@ const TemaDetalle = () => {
   const handleEliminarRespuestaEditada = (index) => {
     if (preguntaEditada.respuestas.length > MIN_RESPUESTAS) {
       const nuevasRespuestas = preguntaEditada.respuestas.filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       );
 
       setPreguntaEditada({
@@ -580,12 +603,17 @@ const TemaDetalle = () => {
         <AlertMessage message={error} setMessage={setError} type="danger" />
       )}
       {successMessage && (
-        <AlertMessage message={successMessage} setMessage={setSuccessMessage} type="success"/>
+        <AlertMessage
+          message={successMessage}
+          setMessage={setSuccessMessage}
+          type="success"
+        />
       )}
 
       <TituloEditable
         tema={tema}
         editando={editando}
+        editing={isEditing}
         setEditando={setEditando}
         nuevoTitulo={nuevoTitulo}
         setNuevoTitulo={setNuevoTitulo}
@@ -602,7 +630,6 @@ const TemaDetalle = () => {
         setShowGenerateModal={setShowGenerateModal}
         setShowExportModal={setShowExportModal}
       />
-
 
       {/* 📌 Contenedor de botones centrados */}
       <div className="d-flex flex-column justify-content-center align-items-center gap-3 mt-3">
@@ -871,9 +898,20 @@ const TemaDetalle = () => {
                       fontSize: "0.9rem",
                       padding: "0.5rem",
                     }}
+                    disabled={creatingPregunta}
                   >
-                    <i className="bi bi-check-circle-fill me-2"></i>
-                    Guardar Pregunta
+                    {creatingPregunta ? (
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                    ) : (
+                      <>
+                        <i className="bi bi-check-circle-fill me-2"></i>
+                        Guardar Pregunta
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -955,17 +993,21 @@ const TemaDetalle = () => {
                           {/* 📌 Botón para editar la pregunta */}
                           {editandoPreguntaId === pregunta.id ? (
                             <>
-                              <i
-                                className="bi bi-check-circle-fill text-success hover-pink btn"
-                                style={{
-                                  cursor: "pointer",
-                                  fontSize: "1.2rem",
-                                }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleGuardarPregunta();
-                                }}
-                              ></i>
+                              {true 
+                                ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin=20px"></span>
+                                : <i
+                                  className="bi bi-check-circle-fill text-success hover-pink btn"
+                                  style={{
+                                    cursor: "pointer",
+                                    fontSize: "1.2rem",
+                                  }}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleGuardarPregunta();
+                                  }}
+                                  disabled={editingPregunta}
+                                  ></i>
+                              }
                               <i
                                 className="bi bi-x-circle-fill text-danger hover-pink btn"
                                 style={{
@@ -976,6 +1018,7 @@ const TemaDetalle = () => {
                                   e.preventDefault();
                                   handleCancelarEdicion();
                                 }}
+                                disabled={editingPregunta}
                               ></i>
                             </>
                           ) : (
@@ -1057,7 +1100,7 @@ const TemaDetalle = () => {
                                             onChange={(e) =>
                                               handleEditarRespuestaChange(
                                                 idx,
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             onInput={(e) => autoResize(e)}
@@ -1076,7 +1119,7 @@ const TemaDetalle = () => {
                                                 onClick={(e) => {
                                                   e.preventDefault();
                                                   handleEliminarRespuestaEditada(
-                                                    idx
+                                                    idx,
                                                   );
                                                 }}
                                               ></i>
@@ -1242,13 +1285,22 @@ const TemaDetalle = () => {
                 <button
                   className="btn btn-primary w-50"
                   onClick={handleImportarPreguntas}
-                  disabled={!archivoSeleccionado} // 📌 Deshabilitar hasta que haya un archivo
+                  disabled={!archivoSeleccionado || loadingButton} // 📌 Deshabilitar hasta que haya un archivo
                 >
-                  Aceptar
+                  {loadingButton ? (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : (
+                    "Aceptar"
+                  )}
                 </button>
                 <button
                   className="btn btn-outline-secondary w-50"
                   onClick={() => setShowImportModal(false)}
+                  disabled={loadingButton}
                 >
                   Cancelar
                 </button>
@@ -1293,9 +1345,17 @@ const TemaDetalle = () => {
                 <button
                   className="btn btn-primary btn-glow"
                   onClick={handleGenerarPreguntas}
-                  disabled={!archivoSeleccionado} // 📌 Deshabilitar hasta que haya un archivo
+                  disabled={!archivoSeleccionado || loadingButton} // 📌 Deshabilitar hasta que haya un archivo
                 >
-                  🚀 Subir Archivo
+                  {loadingButton ? (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : (
+                    "🚀 Subir Archivo"
+                  )}
                 </button>
               </div>
             </div>
@@ -1358,12 +1418,22 @@ const TemaDetalle = () => {
                     <button
                       className="btn btn-success w-50"
                       onClick={handleExportarTema}
+                      disabled={loadingButton}
                     >
-                      Descargar
+                      {loadingButton ? (
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                      ) : (
+                        "Descargar"
+                      )}
                     </button>
                     <button
                       className="btn btn-outline-secondary w-50"
                       onClick={() => setShowExportModal(false)}
+                      disabled={loadingButton}
                     >
                       Cancelar
                     </button>
@@ -1399,6 +1469,7 @@ const TemaDetalle = () => {
                   type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowModal(false)}
+                  disabled={isDeleting}
                 >
                   Cancelar
                 </button>
@@ -1408,8 +1479,17 @@ const TemaDetalle = () => {
                   onClick={
                     temaAEliminar ? handleDeleteTema : handleEliminarPregunta
                   }
+                  disabled={isDeleting}
                 >
-                  Eliminar
+                  {isDeleting ? (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : (
+                    "Eliminar"
+                  )}
                 </button>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 const TituloEditable = ({
   tema,
   editando,
+  editing,
   setEditando,
   nuevoTitulo,
   setNuevoTitulo,
@@ -46,8 +47,19 @@ const TituloEditable = ({
         <button
           className="btn i-menu i-orange ms-2"
           onClick={editando ? handleActualizarTitulo : () => setEditando(true)}
+          disabled={editing}
         >
-          {editando ? <i className="bi bi-check-lg"></i> : <i className="bi bi-pencil-square"></i>}
+          { tema
+          ? (
+            editando 
+            ? (editing 
+              ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              : <i className="bi bi-check-lg"></i>) 
+            : <i className="bi bi-pencil-square"></i>
+          )
+          : (
+            ""
+          )}
         </button>
       </div>
 

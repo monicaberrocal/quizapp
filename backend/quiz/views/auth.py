@@ -15,6 +15,10 @@ from ..models import CodigoActivacion
 from ..serializers.serializers import (
     RegistroUsuarioSerializer
 )
+from django.core.cache import cache
+from django.contrib.auth import authenticate, login, get_user_model
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 @api_view(["POST"])
@@ -71,11 +75,6 @@ def logout_api(request):
     response = Response({"message": "Sesión cerrada correctamente."})
     response.delete_cookie("sessionid")
     return response
-
-from django.core.cache import cache
-from django.contrib.auth import authenticate, login, get_user_model
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 
 @api_view(["POST"])
