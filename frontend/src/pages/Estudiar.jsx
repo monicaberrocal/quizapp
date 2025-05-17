@@ -9,16 +9,22 @@ import "../assets/css/styles_test.css";
 const Estudiar = () => {
   const [csrfToken, setCsrfToken] = useState("");
   const { tipo, filtro, id } = useParams();
-  const [preguntas, setPreguntas] = useState([]);
-  const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
+  const [preguntaActual, setPreguntaActual] = useState(null);
+  // const [preguntas, setPreguntas] = useState([]);
+  // const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [mostrarPregunta, setMostrarPregunta] = useState(true);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   fetchPreguntas();
+  //   fetchCsrfToken();
+  // }, [tipo, filtro, id]);
+
   useEffect(() => {
-    fetchPreguntas();
     fetchCsrfToken();
+    fetchPregunta();
   }, [tipo, filtro, id]);
 
   const fetchCsrfToken = async () => {
@@ -30,42 +36,91 @@ const Estudiar = () => {
     }
   };
 
-  const fetchPreguntas = async () => {
+  // const fetchPreguntas = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
+  //       withCredentials: true,
+  //     });
+  //     setPreguntas(response.data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchPregunta = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
-        withCredentials: true,
+      const response = await api.get(
+        `/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`,
+        { withCredentials: true },
+      );
+      setPreguntaActual({
+        ...response.data.pregunta,
+        numero_actual: response.data.numero_actual,
+        total: response.data.total,
       });
-      setPreguntas(response.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error al cargar pregunta", error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   const handleSeleccionarRespuesta = (respuestaId, esCorrecta) => {
     setRespuestaSeleccionada({ id: respuestaId, correcta: esCorrecta });
   };
 
+  // const handleSiguientePregunta = () => {
+  //   setRespuestaSeleccionada(null);
+  //   setMostrarPregunta(true);
+  //   if (preguntaActualIndex < preguntas.length - 1) {
+  //     setPreguntaActualIndex(preguntaActualIndex + 1);
+  //   } else {
+  //     navigate(`/finalizar/${tipo}/${filtro}/${id}`);
+  //   }
+  // };
+
   const handleSiguientePregunta = () => {
     setRespuestaSeleccionada(null);
     setMostrarPregunta(true);
-    if (preguntaActualIndex < preguntas.length - 1) {
-      setPreguntaActualIndex(preguntaActualIndex + 1);
-    } else {
-      navigate("/finalizar");
-    }
+    fetchPregunta();
   };
+
+  // const handleEnviarRespuesta = async () => {
+  //   try {
+  //     await api.post(
+  //       `/estudiar/?tipo=${tipo}&filtro=${filtro}&id=${id}`,
+  //       {
+  //         pregunta_id: preguntaActual.id,
+  //         respuesta_id: respuestaSeleccionada?.id,
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "X-CSRFToken": csrfToken,
+  //         },
+  //         withCredentials: true,
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  //   setMostrarPregunta(false);
+  // };
 
   const handleEnviarRespuesta = async () => {
     try {
       await api.post(
-        `/estudiar/?tipo=${tipo}&filtro=${filtro}&id=${id}`,
+        `/estudiar/`,
         {
           pregunta_id: preguntaActual.id,
           respuesta_id: respuestaSeleccionada?.id,
+          tipo,
+          filtro,
+          id,
         },
         {
           headers: {
@@ -73,43 +128,53 @@ const Estudiar = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        }
+        },
       );
+      setMostrarPregunta(false);
     } catch (error) {
       console.error(error);
     }
-    setMostrarPregunta(false);
   };
 
   if (loading) {
     return <LoadingScreen mensaje="Cargando preguntas para estudiar..." />;
   }
-  
-  
-  if (!preguntas.length) {
+
+  // if (!preguntas.length) {
+  //   return <div className="text-center mt-5">No hay preguntas disponibles</div>;
+  // }
+
+  if (!preguntaActual) {
     return <div className="text-center mt-5">No hay preguntas disponibles</div>;
   }
-  
 
-  const preguntaActual = preguntas[preguntaActualIndex];
+  // const preguntaActual = preguntas[preguntaActualIndex];
 
   return (
     <>
       {mostrarPregunta ? (
+        // <PreguntaMostrar
+        //   preguntaActual={preguntaActual}
+        //   preguntaActualIndex={preguntaActualIndex + 1}
+        //   totalPreguntas={preguntas.length}
+        //   handleEnviarRespuesta={() => handleEnviarRespuesta()}
+        //   handleSeleccionarRespuestaSuper={(respuestaId, esCorrecta) =>
+        //     handleSeleccionarRespuesta(respuestaId, esCorrecta)
+        //   }
+        // />
         <PreguntaMostrar
           preguntaActual={preguntaActual}
-          preguntaActualIndex={preguntaActualIndex + 1}
-          totalPreguntas={preguntas.length}
-          handleEnviarRespuesta={() => handleEnviarRespuesta()}
-          handleSeleccionarRespuestaSuper={(respuestaId, esCorrecta) =>
-            handleSeleccionarRespuesta(respuestaId, esCorrecta)
-          }
+          handleEnviarRespuesta={handleEnviarRespuesta}
+          handleSeleccionarRespuestaSuper={handleSeleccionarRespuesta}
         />
       ) : (
         <RespuestaMostrar
           pregunta={preguntaActual}
           respuestaSeleccionada={respuestaSeleccionada}
-          handleSiguientePregunta={() => handleSiguientePregunta()}
+          handleSiguientePregunta={handleSiguientePregunta}
+          tipo={tipo}
+          filtro={filtro}
+          id={id}
         />
       )}
     </>
