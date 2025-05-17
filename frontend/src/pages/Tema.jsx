@@ -114,7 +114,7 @@ const TemaDetalle = () => {
 
   const handleCrearPregunta = async (e) => {
     e.preventDefault();
-    setCreatingPregunta(true)
+    setCreatingPregunta(true);
 
     try {
       // 📌 Formatear la estructura de la pregunta antes de enviarla
@@ -149,7 +149,7 @@ const TemaDetalle = () => {
     } catch (error) {
       setError("Error al crear la pregunta.");
     } finally {
-      setCreatingPregunta(false)
+      setCreatingPregunta(false);
     }
   };
 
@@ -542,7 +542,7 @@ const TemaDetalle = () => {
       setPreguntaEditada(null);
       return;
     }
-    setEditingPregunta(true)
+    setEditingPregunta(true);
     try {
       const response = await api.put(
         `/preguntas/${preguntaEditada.id}/`,
@@ -574,8 +574,8 @@ const TemaDetalle = () => {
       setError("Error al actualizar la pregunta.");
       setEditandoPreguntaId(null);
       setPreguntaEditada(null);
-    } finally{
-      setEditingPregunta(false)
+    } finally {
+      setEditingPregunta(false);
     }
   };
 
@@ -993,9 +993,15 @@ const TemaDetalle = () => {
                           {/* 📌 Botón para editar la pregunta */}
                           {editandoPreguntaId === pregunta.id ? (
                             <>
-                              {true 
-                                ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ margin: "20px" }}></span>
-                                : <i
+                              {editingPregunta ? (
+                                <span
+                                  className="spinner-border spinner-border-sm"
+                                  role="status"
+                                  aria-hidden="true"
+                                  style={{ margin: "20px" }}
+                                ></span>
+                              ) : (
+                                <i
                                   className="bi bi-check-circle-fill text-success hover-pink btn"
                                   style={{
                                     cursor: "pointer",
@@ -1006,8 +1012,8 @@ const TemaDetalle = () => {
                                     handleGuardarPregunta();
                                   }}
                                   disabled={editingPregunta}
-                                  ></i>
-                              }
+                                ></i>
+                              )}
                               <i
                                 className="bi bi-x-circle-fill text-danger hover-pink btn"
                                 style={{
