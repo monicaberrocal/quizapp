@@ -24,7 +24,7 @@ function App() {
         <Route path="/temas/:temaId" element={<Tema />} />
         <Route path="/asignaturas/:asignaturaId" element={<Asignatura />} />
         <Route path="/cuestionario/:tipo/:filtro/:id" element={<Estudiar />} />
-        <Route path="/finalizar" element={<FinalizarTest />} />
+        <Route path="/finalizar/:tipo/:filtro/:id" element={<FinalizarTest />} />
       </Routes>
     </Layout>
   );

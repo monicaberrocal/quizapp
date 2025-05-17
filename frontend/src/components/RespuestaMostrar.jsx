@@ -1,7 +1,14 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
-const RespuestaMostrar = ({ pregunta, respuestaSeleccionada, handleSiguientePregunta }) => {
-  const navigate = useNavigate()
+const RespuestaMostrar = ({
+  pregunta,
+  respuestaSeleccionada,
+  handleSiguientePregunta,
+  tipo,
+  filtro,
+  id,
+}) => {
+  const navigate = useNavigate();
 
   return (
     <div className="container mt-5">
@@ -20,7 +27,8 @@ const RespuestaMostrar = ({ pregunta, respuestaSeleccionada, handleSiguientePreg
             <div className="alert alert-danger" role="alert">
               <h4 className="alert-heading">Respuesta incorrecta</h4>
               <p>
-                La respuesta correcta era: <strong>{pregunta.respuesta_correcta.texto}</strong>
+                La respuesta correcta era:{" "}
+                <strong>{pregunta.respuesta_correcta.texto}</strong>
               </p>
             </div>
           )}
@@ -44,11 +52,12 @@ const RespuestaMostrar = ({ pregunta, respuestaSeleccionada, handleSiguientePreg
                         <strong>¡Correcta!</strong>
                       </p>
                     )}
-                    {respuestaSeleccionada?.correcta === false && respuesta.id === respuestaSeleccionada?.id && (
-                      <p className="card-text text-danger mt-2 mb-0">
-                        <strong>Incorrecta</strong>
-                      </p>
-                    )}
+                    {respuestaSeleccionada?.correcta === false &&
+                      respuesta.id === respuestaSeleccionada?.id && (
+                        <p className="card-text text-danger mt-2 mb-0">
+                          <strong>Incorrecta</strong>
+                        </p>
+                      )}
                   </div>
                 </div>
               </div>
@@ -63,18 +72,23 @@ const RespuestaMostrar = ({ pregunta, respuestaSeleccionada, handleSiguientePreg
           )}
 
           <div className="text-center mt-4">
-            <button className="btn btn-primary btn-lg me-3" onClick={() => handleSiguientePregunta()}>
+            <button
+              className="btn btn-primary btn-lg me-3"
+              onClick={() => handleSiguientePregunta()}
+            >
               Continuar
             </button>
-            <button className="btn btn-outline-primary btn-lg" onClick={() => navigate("/finalizar")}>
+            <button
+              className="btn btn-outline-primary btn-lg"
+              onClick={() => navigate(`/finalizar/${tipo}/${filtro}/${id}`)}
+            >
               Finalizar
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RespuestaMostrar
-
+export default RespuestaMostrar;
