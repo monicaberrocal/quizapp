@@ -34,9 +34,10 @@ def send_log_email(message):
         to=["gemastudiesapp@gmail.com"],
     ).send()
     
-def send_error_email(tema_name, user_email):
+def send_error_email(tema_name, user_email, asignatura_name):
     html_content = render_to_string("quiz/error_questions_generation.html", {
-        "tema": tema_name
+        "tema": tema_name,
+        "asignatura": asignatura_name
     })
 
     subject = "❌ Error al generar las preguntas"
@@ -48,6 +49,7 @@ def send_success_email(tema, user_email):
 
     html_content = render_to_string("quiz/success_questions_generation.html", {
         "tema": tema.nombre,
+        "asignatura": tema.asignatura.nombre,
         "quiz_link": link
     })
 

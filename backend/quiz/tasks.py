@@ -39,7 +39,7 @@ def process_uploaded_file_task(tema_id, file_base64, extension, user_email):
         error_message = "".join(traceback.format_exception(type(e), e, e.__traceback__))
         logger.error(error_message)
         send_log_email(error_message)
-        send_error_email(tema.nombre, user_email)
+        send_error_email(tema.nombre, user_email, tema.asignatura.nombre)
 
 
 
