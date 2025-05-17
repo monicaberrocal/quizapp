@@ -47,7 +47,7 @@ const Temas = () => {
   const handleCreateAsignatura = async (e) => {
     e.preventDefault();
     setError("");
-    setCreating(true);  
+    setCreating(true);
 
     try {
       const response = await api.post(
@@ -59,7 +59,7 @@ const Temas = () => {
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
-        }
+        },
       );
 
       // 🔹 Agregar la nueva asignatura con una lista vacía de temas
@@ -88,7 +88,7 @@ const Temas = () => {
 
   const handleDeleteTema = async () => {
     if (!temaAEliminar) return;
-    setDeleting(true)
+    setDeleting(true);
 
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
@@ -103,9 +103,9 @@ const Temas = () => {
         prevTemas.map((asignatura) => ({
           ...asignatura,
           temas: asignatura.temas.filter(
-            (tema) => tema.id !== temaAEliminar.id
+            (tema) => tema.id !== temaAEliminar.id,
           ),
-        }))
+        })),
       );
     } catch (error) {
       console.error("Error al eliminar el tema:", error.response?.data);
@@ -113,13 +113,13 @@ const Temas = () => {
     } finally {
       setShowModal(false);
       setTemaAEliminar(null);
-      setDeleting(false)
+      setDeleting(false);
     }
   };
 
   const handleDeleteAsignatura = async () => {
     if (!asignaturaAEliminar) return;
-    setDeleting(true)
+    setDeleting(true);
 
     try {
       await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
@@ -131,7 +131,7 @@ const Temas = () => {
 
       // 🔹 Eliminar la asignatura de la lista en React
       setTemasPorAsignatura(
-        temasPorAsignatura.filter((a) => a.id !== asignaturaAEliminar.id)
+        temasPorAsignatura.filter((a) => a.id !== asignaturaAEliminar.id),
       );
     } catch (error) {
       console.error("Error al eliminar la asignatura:", error.response?.data);
@@ -139,7 +139,7 @@ const Temas = () => {
     } finally {
       setShowModal(false);
       setAsignaturaAEliminar(null);
-      setDeleting(false)
+      setDeleting(false);
     }
   };
 
@@ -163,8 +163,16 @@ const Temas = () => {
             required
           />
           <button type="submit" className="btn btn-primary" disabled={creating}>
-              {creating ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Agregar"}
-            </button>
+            {creating ? (
+              <span
+                className="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+            ) : (
+              "Agregar"
+            )}
+          </button>
         </div>
       </form>
 
@@ -334,7 +342,7 @@ const Temas = () => {
                                   {/* Eliminar */}
                                 </i>
                               </div>
-                              </div>
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -383,8 +391,16 @@ const Temas = () => {
                   }
                   disabled={isDeleting}
                 >
-                    {isDeleting ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : "Eliminar"}
-                    </button>
+                  {isDeleting ? (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : (
+                    "Eliminar"
+                  )}
+                </button>
               </div>
             </div>
           </div>

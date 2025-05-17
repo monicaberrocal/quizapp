@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
 import PreguntaMostrar from "../components/PreguntaMostrar";
 import RespuestaMostrar from "../components/RespuestaMostrar";
+import LoadingScreen from "../components/LoadingScreen";
 import "../assets/css/styles_test.css";
 
 const Estudiar = () => {
@@ -80,9 +81,10 @@ const Estudiar = () => {
     setMostrarPregunta(false);
   };
 
-  if (loading) {
-    return <div className="text-center mt-5">Cargando preguntas...</div>;
+  if (true) {
+    return <LoadingScreen mensaje="Cargando preguntas para estudiar..." />;
   }
+  
   
   if (!preguntas.length) {
     return <div className="text-center mt-5">No hay preguntas disponibles</div>;
