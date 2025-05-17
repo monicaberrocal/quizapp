@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api";
 import { Link } from "react-router-dom";
 import AlertMessage from "../components/AlertMessage";
+import SkeletonAsignatura from "../components/Asignatura/SkeletonAsignatura";
 
 const Temas = () => {
   const [temasPorAsignatura, setTemasPorAsignatura] = useState([]);
@@ -177,7 +178,11 @@ const Temas = () => {
       </form>
 
       {loading ? (
-        <p className="text-center">Cargando asignaturas y temas...</p>
+        <>
+          {[...Array(5)].map((_, i) => (
+            <SkeletonAsignatura key={i} />
+          ))}
+        </>
       ) : (
         <div className="accordion" id="accordionTemas">
           {temasPorAsignatura.length === 0 ? (
