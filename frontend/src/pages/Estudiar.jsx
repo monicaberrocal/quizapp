@@ -81,7 +81,7 @@ const Estudiar = () => {
     setMostrarPregunta(false);
   };
 
-  if (LoadingScreen) {
+  if (loading) {
     return <LoadingScreen mensaje="Cargando preguntas para estudiar..." />;
   }
   
