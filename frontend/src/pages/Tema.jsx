@@ -994,7 +994,7 @@ const TemaDetalle = () => {
                           {editandoPreguntaId === pregunta.id ? (
                             <>
                               {true 
-                                ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin=20px"></span>
+                                ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{ margin: "20px" }}></span>
                                 : <i
                                   className="bi bi-check-circle-fill text-success hover-pink btn"
                                   style={{
