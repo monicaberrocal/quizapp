@@ -36,7 +36,7 @@ const ActivateAccount = () => {
   return (
     <div className="container text-center mt-5">
       {loading ? (
-        <div className="spinner-border text-primary" role="status">
+        <div className="spinner-border naranja" role="status">
           <span className="visually-hidden">Activando cuenta...</span>
         </div>
       ) : (

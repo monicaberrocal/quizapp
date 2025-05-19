@@ -24,13 +24,14 @@ const Temas = () => {
   }, []);
 
   const fetchTemas = async () => {
+    setError("");
     try {
       const response = await api.get("/asignaturas/", {
         withCredentials: true,
       });
       setTemasPorAsignatura(response.data);
     } catch (error) {
-      setError("Error al cargar los temas.");
+      setError("Error al cargar las asignaturas.");
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,7 @@ const Temas = () => {
       );
     } catch (error) {
       console.error("Error al eliminar el tema:", error.response?.data);
-      setError("Error al eliminar el tema.");
+      setError("Error al eliminar el tema");
     } finally {
       setShowModal(false);
       setTemaAEliminar(null);
@@ -136,7 +137,7 @@ const Temas = () => {
       );
     } catch (error) {
       console.error("Error al eliminar la asignatura:", error.response?.data);
-      setError("Error al eliminar la asignatura.");
+      setError("Error al eliminar la asignatura");
     } finally {
       setShowModal(false);
       setAsignaturaAEliminar(null);

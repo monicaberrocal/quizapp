@@ -14,8 +14,8 @@ const ImportModal = ({ setShowImportModal, importFormat, setImportFormat, handle
             <button className={`btn ${importFormat === "excel" ? "btn-primary active" : "btn-outline-primary"}`} onClick={() => setImportFormat("excel")}>Excel</button>
           </div>
 
-          <input type="file" accept={importFormat === "json" ? ".json" : ".xlsx"} className="form-control" onChange={handleImportarPreguntas} />
           <button className="btn btn-outline-secondary w-50 mt-3" onClick={() => setShowImportModal(false)}>Cancelar</button>
+          <input type="file" accept={importFormat === "json" ? ".json" : ".xlsx"} className="form-control" onChange={handleImportarPreguntas} />
         </div>
       </div>
     </div>

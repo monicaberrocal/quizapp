@@ -89,7 +89,7 @@ def descargar_tema(request, tema_id):
         return generar_excel_tema(tema_data)
 
     else:
-        return JsonResponse({"error": "Formato no válido. Usa ?formato=json o ?formato=excel"}, status=400)
+        return JsonResponse({"error": "Formato no válido. Usa JSON o Excel"}, status=400)
 
 
 def generar_json_tema(tema):
@@ -251,7 +251,7 @@ def importar_preguntas_json(tema_data, tema):
 
 def importar_preguntas_excel(tema, df):
     # 📌 Eliminar la primera fila con el título del tema, dejando solo las preguntas
-    # df = df.iloc[1:].reset_index(drop=True)
+    df = df.iloc[1:].reset_index(drop=True)
 
     # 📌 Iterar sobre las preguntas
     for _, row in df.iterrows():

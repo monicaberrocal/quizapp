@@ -426,7 +426,7 @@ const AsignaturaDetalle = () => {
                 // Loader mientras se espera la respuesta
                 <div className="text-center">
                   <div
-                    className="spinner-border text-primary"
+                    className="spinner-border naranja"
                     role="status"
                   ></div>
                   <p className="mt-2">Generando archivo...</p>
@@ -462,16 +462,16 @@ const AsignaturaDetalle = () => {
 
                   <div className="d-flex justify-content-center gap-3">
                     <button
-                      className="btn btn-success w-50"
-                      onClick={handleExportarAsignatura}
-                    >
-                      Descargar
-                    </button>
-                    <button
                       className="btn btn-outline-secondary w-50"
                       onClick={() => setShowExportModal(false)}
                     >
                       Cancelar
+                    </button>
+                    <button
+                      className="btn btn-success w-50"
+                      onClick={handleExportarAsignatura}
+                    >
+                      Descargar
                     </button>
                   </div>
                 </>

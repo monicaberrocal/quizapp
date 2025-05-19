@@ -1289,6 +1289,13 @@ const TemaDetalle = () => {
               {/* 📌 Botón de aceptar y cancelar */}
               <div className="d-flex justify-content-center gap-3">
                 <button
+                  className="btn btn-outline-secondary w-50"
+                  onClick={() => setShowImportModal(false)}
+                  disabled={loadingButton}
+                >
+                  Cancelar
+                </button>
+                <button
                   className="btn btn-primary w-50"
                   onClick={handleImportarPreguntas}
                   disabled={!archivoSeleccionado || loadingButton} // 📌 Deshabilitar hasta que haya un archivo
@@ -1302,13 +1309,6 @@ const TemaDetalle = () => {
                   ) : (
                     "Aceptar"
                   )}
-                </button>
-                <button
-                  className="btn btn-outline-secondary w-50"
-                  onClick={() => setShowImportModal(false)}
-                  disabled={loadingButton}
-                >
-                  Cancelar
                 </button>
               </div>
             </div>
@@ -1386,7 +1386,7 @@ const TemaDetalle = () => {
                 // 📌 Loader mientras se espera la respuesta
                 <div className="text-center">
                   <div
-                    className="spinner-border text-primary"
+                    className="spinner-border naranja"
                     role="status"
                   ></div>
                   <p className="mt-2">Generando archivo...</p>
@@ -1422,7 +1422,14 @@ const TemaDetalle = () => {
 
                   <div className="d-flex justify-content-center gap-3">
                     <button
-                      className="btn btn-success w-50"
+                      className="btn btn-outline-secondary w-50"
+                      onClick={() => setShowExportModal(false)}
+                      disabled={loadingButton}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="btn btn-primary w-50"
                       onClick={handleExportarTema}
                       disabled={loadingButton}
                     >
@@ -1435,13 +1442,6 @@ const TemaDetalle = () => {
                       ) : (
                         "Descargar"
                       )}
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary w-50"
-                      onClick={() => setShowExportModal(false)}
-                      disabled={loadingButton}
-                    >
-                      Cancelar
                     </button>
                   </div>
                 </>

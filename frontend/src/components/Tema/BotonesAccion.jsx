@@ -27,12 +27,12 @@ const BotonesAccion = ({
       </button>
 
       {/* Botón para exportar tema (si lo quieres activar) */}
-      {/* <button
+      <button
         className="btn btn-outline-primary"
         onClick={() => setShowExportModal(true)}
       >
         <i className="bi bi-download"></i> Exportar Tema
-      </button> */}
+      </button>
     </div>
   );
 };

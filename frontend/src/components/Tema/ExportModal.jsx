@@ -10,7 +10,7 @@ const ExportModal = ({ setShowExportModal, exportFormat, setExportFormat, handle
 
           {isProcessing ? (
             <div className="text-center">
-              <div className="spinner-border text-primary" role="status"></div>
+              <div className="spinner-border naranja" role="status"></div>
               <p className="mt-2">Generando archivo...</p>
             </div>
           ) : (
@@ -22,8 +22,8 @@ const ExportModal = ({ setShowExportModal, exportFormat, setExportFormat, handle
               </div>
 
               <div className="d-flex justify-content-center gap-3">
-                <button className="btn btn-success w-50" onClick={handleExportarTema}>Descargar</button>
                 <button className="btn btn-outline-secondary w-50" onClick={() => setShowExportModal(false)}>Cancelar</button>
+                <button className="btn btn-success w-50" onClick={handleExportarTema}>Descargar</button>
               </div>
             </>
           )}
