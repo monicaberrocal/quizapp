@@ -2,8 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
-from ..models import Asignatura, Tema, Pregunta, Respuesta, CodigoActivacion
-from ..utils import send_activation_email
+from ..models import Asignatura, ProgresoTest, Tema, Pregunta, Respuesta, CodigoActivacion
+from ..utils import send_activation_email, send_info_email
 import os
 from rest_framework.validators import UniqueValidator
 
@@ -57,7 +57,8 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         link_activacion = f"{FRONTEND_URL}/activar/{token}"
 
         send_activation_email(request, usuario, link_activacion)
-
+        send_info_email(usuario)
+        
         return usuario
 
 class RespuestaSerializer(serializers.ModelSerializer):
@@ -186,3 +187,21 @@ class AsignaturaSerializer(serializers.ModelSerializer):
 
     def get_temas_con_preguntas_falladas(self, obj):
         return [tema.id for tema in obj.temas.all() if tema.preguntas.filter(fallos__gt=0).exists()]
+    
+
+class ProgresoTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProgresoTest
+        fields = [
+            'id',
+            'tipo',
+            'filtro',
+            'preguntas_id',
+            'respuestas_correctas',
+            'respondidas',
+            'totalRespondidas',
+            'finalizado_en',
+            'creado_en',
+        ]
+        depth = 1
+

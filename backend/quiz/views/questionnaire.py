@@ -1,4 +1,5 @@
 # en quiz/views.py
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -128,6 +129,9 @@ class FinalizarTestView(APIView):
         total_respondidas = test.totalRespondidas
         respuestas_correctas = test.respuestas_correctas
         fallos = total_respondidas - respuestas_correctas
+        
+        test.completado = True
+        test.finalizado_en =  timezone.now()
 
         return Response({
             'total_respondidas': total_respondidas,
