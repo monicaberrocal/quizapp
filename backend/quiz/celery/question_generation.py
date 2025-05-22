@@ -116,7 +116,12 @@ def fix_json_manually(texto, client, model):
     ultima = coincidencias[-1]
     fin = ultima.end()
 
-    texto_arreglado = texto[:fin] + ']}'
+    if not texto.strip().endswith(']}'):
+        texto_arreglado = texto[:fin] + ']}'
+    else:
+        texto_arreglado = texto
+
+    texto_arreglado = re.sub(r',\s*]', ']', texto_arreglado)
 
     try:
         return json.loads(texto_arreglado)
