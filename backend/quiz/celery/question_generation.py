@@ -88,7 +88,6 @@ def generate_questions_with_openai(prompt, text, client, model, accumulator=0):
         return response_data["preguntas"]
         
     except json.JSONDecodeError:
-        # response_data = fix_json(openai_json, client, model)
         response_data = fix_json_manually(openai_json, client, model)
         if response_data:
             return response_data["preguntas"]
@@ -111,8 +110,8 @@ def fix_json_manually(texto, client, model):
     coincidencias = list(re.finditer(patron, texto, re.DOTALL))
 
     if not coincidencias:
-        print("❌ No se pudo encontrar un cierre válido de 'ayuda'.")
-        return fix_json(texto_arreglado, client, model)
+        error = "❌ No se pudo encontrar un cierre válido de 'ayuda'."
+        return fix_json(texto_arreglado, client, model, error)
 
     ultima = coincidencias[-1]
     fin = ultima.end()
@@ -122,10 +121,11 @@ def fix_json_manually(texto, client, model):
     try:
         return json.loads(texto_arreglado)
     except json.JSONDecodeError as e:
-        return fix_json(texto_arreglado, client, model)
+        return fix_json(texto_arreglado, client, model, e)
 
-def fix_json(invalid_json, client, model, accumulator=0):
-    send_log_email(invalid_json)
+def fix_json(invalid_json, client, model, error, accumulator=0):
+    
+    send_log_email(error + '\n\n' + invalid_json)
     
     if accumulator > 3:
         return []
@@ -147,7 +147,7 @@ def fix_json(invalid_json, client, model, accumulator=0):
         response_data = json.loads(openai_json)
         return response_data
     
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         logger.error("La respuesta no es un JSON válido.")
-        response_data = fix_json(openai_json, client, model, accumulator+1)
+        response_data = fix_json(openai_json, client, model, e, accumulator+1)
         return response_data
