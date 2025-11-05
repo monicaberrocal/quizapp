@@ -9,7 +9,7 @@ import openai
 
 from .models import Tema
 from .celery.pdf_process import process_pdf
-from .utils import send_log_email, send_success_email, send_error_email
+from .utils_email import send_log_email, send_success_email, send_error_email
 
 logger = logging.getLogger(__name__)
 
