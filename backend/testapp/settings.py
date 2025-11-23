@@ -170,9 +170,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = [
-    config("CSRF_TRUSTED_ORIGINS")
-]
+CSRF_TRUSTED_ORIGINS = [config("CSRF_TRUSTED_ORIGINS").split(",")]
 
 
 CELERY_BROKER_URL = config("REDIS_URL")
