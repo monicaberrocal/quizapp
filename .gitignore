@@ -4,17 +4,9 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .env
+backend/quiz/__pycache__/*
 frontend/.env
 frontend/src/api.js
+frontend/testapp/__pycache__/*
 pruebas.ipynb
 .history
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.pyc
-*.pyo
-*.pyd

@@ -30,7 +30,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [
                        s.strip() for s in v.split(',')])
-CORS_ALLOWED_ORIGINS = [s.strip() for s in config('CORS_ALLOWED_ORIGINS').split(',')]
+CORS_ALLOWED_ORIGINS = [config('CORS_ALLOWED_ORIGINS')]
 
 
 LOGIN_REDIRECT_URL = '/'
@@ -170,7 +170,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = [s.strip() for s in config("CSRF_TRUSTED_ORIGINS").split(",")]
+CSRF_TRUSTED_ORIGINS = [
+    config("CSRF_TRUSTED_ORIGINS")
+]
 
 
 CELERY_BROKER_URL = config("REDIS_URL")
