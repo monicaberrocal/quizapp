@@ -57,10 +57,20 @@ def activar_cuenta_api(request, token):
     
     login(request, usuario)
 
-    return Response({
+    # Establecer cookie de sesión explícitamente con atributos para móviles
+    response = Response({
         "message": "Cuenta activada correctamente.",
         "username": usuario.username
     }, status=status.HTTP_200_OK)
+    response.set_cookie(
+        "sessionid",
+        request.session.session_key,
+        samesite="None",
+        secure=True,
+        httponly=True,
+        max_age=3600
+    )
+    return response
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -74,7 +84,12 @@ def auth_status(request):
 def logout_api(request):
     logout(request)
     response = Response({"message": "Sesión cerrada correctamente."})
-    response.delete_cookie("sessionid")
+    response.delete_cookie(
+        "sessionid",
+        samesite="None",
+        secure=True,
+        httponly=True
+    )
     return response
 
 
@@ -120,7 +135,18 @@ def login_api(request):
         # Reiniciar contador de intentos si login exitoso
         cache.delete(f"intentos:{device_id}_{cuenta_id}")
         cache.delete(f"bloqueo:{device_id}_{cuenta_id}")
-        return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        
+        # Establecer cookie de sesión explícitamente con atributos para móviles
+        response = Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        response.set_cookie(
+            "sessionid",
+            request.session.session_key,
+            samesite="None",
+            secure=True,
+            httponly=True,
+            max_age=3600
+        )
+        return response
     else:
         # Registrar intento fallido por cuenta
         intentos = cache.get(f"intentos:{device_id}_{cuenta_id}", 0) + 1
