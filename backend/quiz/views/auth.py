@@ -148,7 +148,10 @@ def get_csrf_token(request):
 
     response.set_cookie(
         "csrftoken",
-        csrf_token
+        csrf_token,
+        samesite="None",
+        secure=True,
+        httponly=False
     )
 
     return response
