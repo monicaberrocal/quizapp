@@ -4,7 +4,10 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .env
+.env.local
+backend/.env.local
 frontend/.env
+frontend/.env.local
 frontend/src/api.js
 pruebas.ipynb
 .history
