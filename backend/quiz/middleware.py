@@ -1,11 +1,13 @@
 import json
 import time
+import sys
 
 
 class DebugAccessLogMiddleware:
     """
     Middleware de instrumentación temporal para rastrear peticiones a asignaturas
     y confirmar si llega la cookie de sesión/CSRF en móviles.
+    Escribe a stdout para que Railway capture los logs.
     """
 
     def __init__(self, get_response):
@@ -37,8 +39,7 @@ class DebugAccessLogMiddleware:
                     },
                     "timestamp": int(time.time() * 1000),
                 }
-                with open("/home/monica/quizapp/.cursor/debug.log", "a") as f:
-                    f.write(json.dumps(payload) + "\n")
+                print(json.dumps(payload), file=sys.stdout, flush=True)
             except Exception:
                 pass
             # endregion
@@ -65,8 +66,7 @@ class DebugAccessLogMiddleware:
                     },
                     "timestamp": int(time.time() * 1000),
                 }
-                with open("/home/monica/quizapp/.cursor/debug.log", "a") as f:
-                    f.write(json.dumps(payload) + "\n")
+                print(json.dumps(payload), file=sys.stdout, flush=True)
             except Exception:
                 pass
             # endregion
