@@ -4,10 +4,7 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .env
-.env.local
-backend/.env.local
 frontend/.env
-frontend/.env.local
 frontend/src/api.js
 pruebas.ipynb
 .history
@@ -21,3 +18,23 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Database
+*.sqlite3
+*.db
+
+# Environment variables
+.env.local
+backend/.env.local
+frontend/.env.local
+
+# IDE
+.cursor/
+.vscode/
