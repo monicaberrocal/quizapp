@@ -7,8 +7,7 @@ from django.utils.timezone import now
 
 # Django REST framework imports
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 # Local imports (models and serializers)
@@ -17,10 +16,12 @@ from ..serializers.serializers import (
     RegistroUsuarioSerializer
 )
 from django.core.cache import cache
+from django.contrib.auth import authenticate, login, get_user_model
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def registrar_usuario_api(request):
     serializer = RegistroUsuarioSerializer(data=request.data, context={"request": request})
     if serializer.is_valid():
@@ -40,7 +41,6 @@ def registrar_usuario_api(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def activar_cuenta_api(request, token):
     activacion = get_object_or_404(CodigoActivacion, token_activacion=token)
 
@@ -73,7 +73,6 @@ def activar_cuenta_api(request, token):
     return response
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
 def auth_status(request):
     return Response({
         "authenticated": request.user.is_authenticated,
@@ -94,7 +93,6 @@ def logout_api(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def login_api(request):
     username_or_email = request.data.get("username")
     password = request.data.get("password")
@@ -167,7 +165,6 @@ def login_api(request):
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
 def get_csrf_token(request):
     csrf_token = get_token(request)
     response = JsonResponse({"csrfToken": csrf_token})
