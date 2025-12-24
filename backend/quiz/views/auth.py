@@ -87,12 +87,8 @@ def auth_status(request):
 def logout_api(request):
     logout(request)
     response = Response({"message": "Sesión cerrada correctamente."})
-    response.delete_cookie(
-        "sessionid",
-        samesite="None",
-        secure=True,
-        httponly=True
-    )
+    # 🔹 delete_cookie no acepta secure/httponly, solo path y domain
+    response.delete_cookie("sessionid", path="/")
     return response
 
 

@@ -3,9 +3,29 @@ import time
 import logging
 from django.contrib.sessions.models import Session
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import BaseBackend
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+
+class TokenAuthBackend(BaseBackend):
+    """
+    🔹 PARCHÉ TEMPORAL: Backend de autenticación por token
+    """
+    
+    def authenticate(self, request, token=None):
+        if not token:
+            return None
+        try:
+            session = Session.objects.get(session_key=token)
+            session_data = session.get_decoded()
+            user_id = session_data.get('_auth_user_id')
+            if user_id:
+                return User.objects.get(pk=user_id)
+        except (Session.DoesNotExist, User.DoesNotExist, KeyError):
+            pass
+        return None
 
 
 class TokenAuthMiddleware:
@@ -16,25 +36,25 @@ class TokenAuthMiddleware:
     
     def __init__(self, get_response):
         self.get_response = get_response
+        self.backend = TokenAuthBackend()
     
     def __call__(self, request):
-        # 🔹 Si no está autenticado pero hay token en header, intentar autenticar
-        if not request.user.is_authenticated:
-            auth_token = request.META.get("HTTP_X_AUTH_TOKEN")
-            if auth_token:
-                try:
-                    # El token es el session_key, cargar la sesión
-                    session = Session.objects.get(session_key=auth_token)
-                    session_data = session.get_decoded()
-                    user_id = session_data.get('_auth_user_id')
-                    if user_id:
-                        user = User.objects.get(pk=user_id)
-                        request.user = user
-                        # También establecer la sesión en la request
-                        request.session = session
-                        logger.info(f"[TOKEN_AUTH] Usuario autenticado por token: {user.username}")
-                except (Session.DoesNotExist, User.DoesNotExist, KeyError):
+        # 🔹 Si hay token en header, intentar autenticar
+        auth_token = request.META.get("HTTP_X_AUTH_TOKEN")
+        if auth_token:
+            try:
+                # Usar el backend para autenticar
+                user = self.backend.authenticate(request, token=auth_token)
+                if user:
+                    # Establecer el usuario en la request
+                    request.user = user
+                    # También establecer la cookie en la request para compatibilidad
+                    request.COOKIES['sessionid'] = auth_token
+                    logger.info(f"[TOKEN_AUTH] Usuario autenticado por token: {user.username}")
+                else:
                     logger.warning(f"[TOKEN_AUTH] Token inválido: {auth_token[:20]}...")
+            except Exception as e:
+                logger.error(f"[TOKEN_AUTH] Error al autenticar: {str(e)}")
         
         response = self.get_response(request)
         return response
