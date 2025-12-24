@@ -1,6 +1,8 @@
 import json
 import time
-import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DebugAccessLogMiddleware:
@@ -39,7 +41,7 @@ class DebugAccessLogMiddleware:
                     },
                     "timestamp": int(time.time() * 1000),
                 }
-                print(json.dumps(payload), file=sys.stdout, flush=True)
+                logger.debug(f"[ASIGNATURAS] Entrada: {json.dumps(payload, indent=2)}")
             except Exception:
                 pass
             # endregion
@@ -66,7 +68,7 @@ class DebugAccessLogMiddleware:
                     },
                     "timestamp": int(time.time() * 1000),
                 }
-                print(json.dumps(payload), file=sys.stdout, flush=True)
+                logger.debug(f"[ASIGNATURAS] Salida: {json.dumps(payload, indent=2)}")
             except Exception:
                 pass
             # endregion

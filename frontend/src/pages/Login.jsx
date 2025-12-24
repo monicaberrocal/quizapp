@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { AuthContext } from "../context/AuthContext";
@@ -11,6 +11,20 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetchCsrfToken();
+  }, []);
+
+  const fetchCsrfToken = async () => {
+    try {
+      const response = await api.get("/csrf/", { withCredentials: true });
+      setCsrfToken(response.data.csrfToken);
+    } catch (error) {
+      console.error("❌ Error obteniendo CSRF Token", error);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,10 +37,14 @@ const Login = () => {
     setLoading(true);  
 
     try {
-        const response = await api.post(`login/`, formData, { withCredentials: true });
+        const response = await api.post(`login/`, formData, {
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          withCredentials: true,
+        });
     
-        setIsAuthenticated(true);
-        setUsername(response.data.username);
         setIsAuthenticated(true);
         setUsername(response.data.username);
     
