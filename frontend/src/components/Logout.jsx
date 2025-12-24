@@ -9,14 +9,14 @@ const Logout = () => {
 
   const handleLogout = async () => {
     try {
-        await api.get("logout/", { withCredentials: true });
+        await api.get("logout/");
 
-      // 🔹 Borrar la sesión en React
+      // Borrar la sesión en React
       setIsAuthenticated(false);
       setUsername("");
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("username");
-      localStorage.removeItem("auth_token");  // 🔹 PARCHÉ TEMPORAL: Limpiar token
+      localStorage.removeItem("auth_token");
 
       // 🔹 Redirigir al usuario a la página de inicio
       navigate("/");

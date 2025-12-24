@@ -48,8 +48,6 @@ class TokenAuthMiddleware:
                 if user:
                     # Establecer el usuario en la request
                     request.user = user
-                    # También establecer la cookie en la request para compatibilidad
-                    request.COOKIES['sessionid'] = auth_token
                     logger.info(f"[TOKEN_AUTH] Usuario autenticado por token: {user.username}")
                 else:
                     logger.warning(f"[TOKEN_AUTH] Token inválido: {auth_token[:20]}...")
@@ -87,8 +85,7 @@ class DebugAccessLogMiddleware:
                         "method": request.method,
                         "user_is_authenticated": getattr(request, "user", None).is_authenticated if getattr(request, "user", None) else None,
                         "session_key": getattr(getattr(request, "session", None), "session_key", None),
-                        "has_session_cookie": "sessionid" in request.COOKIES,
-                        "has_csrf_cookie": "csrftoken" in request.COOKIES,
+                        "has_auth_token": "HTTP_X_AUTH_TOKEN" in request.META,
                         "origin": request.META.get("HTTP_ORIGIN"),
                         "referer": request.META.get("HTTP_REFERER"),
                         "user_agent": request.META.get("HTTP_USER_AGENT"),
@@ -116,9 +113,7 @@ class DebugAccessLogMiddleware:
                         "status_code": getattr(response, "status_code", None),
                         "user_is_authenticated": getattr(request, "user", None).is_authenticated if getattr(request, "user", None) else None,
                         "session_key": getattr(getattr(request, "session", None), "session_key", None),
-                        "set_cookies_keys": list(getattr(response, "cookies", {}).keys()) if getattr(response, "cookies", None) else [],
-                        "has_session_cookie": "sessionid" in request.COOKIES,
-                        "has_csrf_cookie": "csrftoken" in request.COOKIES,
+                        "has_auth_token": "HTTP_X_AUTH_TOKEN" in request.META,
                         "content_snippet": response.content[:200].decode(errors="ignore") if hasattr(response, "content") else None,
                     },
                     "timestamp": int(time.time() * 1000),

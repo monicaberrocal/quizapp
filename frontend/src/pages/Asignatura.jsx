@@ -14,7 +14,6 @@ const AsignaturaDetalle = () => {
   const [editando, setEditando] = useState(false);
   const [nuevoTitulo, setNuevoTitulo] = useState("");
   const [nuevoTema, setNuevoTema] = useState(""); // Estado para el nuevo tema
-  const [csrfToken, setCsrfToken] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [importFormat, setImportFormat] = useState("json");
@@ -30,14 +29,11 @@ const AsignaturaDetalle = () => {
 
   useEffect(() => {
     fetchAsignaturaDetalle();
-    fetchCsrfToken();
   }, [asignaturaId]);
 
   const fetchAsignaturaDetalle = async () => {
     try {
-      const response = await api.get(`/asignaturas/${asignaturaId}/`, {
-        withCredentials: true,
-      });
+      const response = await api.get(`/asignaturas/${asignaturaId}/`);
       setAsignatura(response.data);
       setTemas(response.data.temas);
       setNuevoTitulo(response.data.nombre);
@@ -48,14 +44,6 @@ const AsignaturaDetalle = () => {
     }
   };
 
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
 
   const handleActualizarTitulo = async () => {
     setEditing(true)
@@ -66,9 +54,7 @@ const AsignaturaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         }
       );
       setAsignatura({ ...asignatura, nombre: response.data.nombre });
@@ -98,12 +84,7 @@ const AsignaturaDetalle = () => {
     setDeleting(true)
 
     try {
-      await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        withCredentials: true,
-      });
+      await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`);
 
       setShowModal(false);
       setAsignaturaAEliminar(null);
@@ -121,12 +102,7 @@ const AsignaturaDetalle = () => {
     if (!temaAEliminar) return;
     setDeleting(true)
     try {
-      await api.delete(`/temas/${temaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        withCredentials: true,
-      });
+      await api.delete(`/temas/${temaAEliminar.id}/`);
       setTemas((prevTemas) =>
         prevTemas.filter((tema) => tema.id !== (temaAEliminar?.id || ""))
       );
@@ -152,9 +128,7 @@ const AsignaturaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         }
       );
 
@@ -182,9 +156,7 @@ const AsignaturaDetalle = () => {
         formData,
         {
           headers: {
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         }
       );
 
@@ -204,10 +176,8 @@ const AsignaturaDetalle = () => {
         `/asignaturas/${asignaturaId}/exportar/?formato=${exportFormat}`,
         {
           headers: {
-            "X-CSRFToken": csrfToken,
             "Content-Type": "multipart/form-data",
           },
-          withCredentials: true,
           responseType: "blob",
         }
       );

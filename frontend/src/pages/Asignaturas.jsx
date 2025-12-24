@@ -9,7 +9,6 @@ const Temas = () => {
   const [nombreAsignatura, setNombreAsignatura] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [csrfToken, setCsrfToken] = useState("");
   const [creating, setCreating] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
 
@@ -20,29 +19,17 @@ const Temas = () => {
 
   useEffect(() => {
     fetchTemas();
-    fetchCsrfToken();
   }, []);
 
   const fetchTemas = async () => {
     setError("");
     try {
-      const response = await api.get("/asignaturas/", {
-        withCredentials: true,
-      });
+      const response = await api.get("/asignaturas/");
       setTemasPorAsignatura(response.data);
     } catch (error) {
       setError("Error al cargar las asignaturas.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
     }
   };
 
@@ -58,9 +45,7 @@ const Temas = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         },
       );
 
@@ -93,12 +78,7 @@ const Temas = () => {
     setDeleting(true);
 
     try {
-      await api.delete(`/temas/${temaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        withCredentials: true,
-      });
+      await api.delete(`/temas/${temaAEliminar.id}/`);
 
       // 🔹 Eliminar el tema de la lista en React
       setTemasPorAsignatura((prevTemas) =>
@@ -124,12 +104,7 @@ const Temas = () => {
     setDeleting(true);
 
     try {
-      await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        withCredentials: true,
-      });
+      await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`);
 
       // 🔹 Eliminar la asignatura de la lista en React
       setTemasPorAsignatura(

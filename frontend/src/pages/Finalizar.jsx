@@ -12,9 +12,7 @@ const Finalizar = () => {
   useEffect(() => {
     const fetchResultados = async () => {
       try {
-        const response = await api.get(`/finalizar_test/${testId}`, {
-          withCredentials: true,
-        })
+        const response = await api.get(`/finalizar_test/${testId}`)
         setResultados(response.data)
       } catch (error) {
         console.error(error)

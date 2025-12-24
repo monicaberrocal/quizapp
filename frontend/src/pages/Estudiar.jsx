@@ -7,7 +7,6 @@ import LoadingScreen from "../components/LoadingScreen";
 import "../assets/css/styles_test.css";
 
 const Estudiar = () => {
-  const [csrfToken, setCsrfToken] = useState("");
   const { tipo, filtro, id } = useParams();
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [mostrarPregunta, setMostrarPregunta] = useState(true);
@@ -22,24 +21,12 @@ const Estudiar = () => {
 
   useEffect(() => {
     fetchPreguntas();
-    fetchCsrfToken();
   }, [tipo, filtro, id]);
-
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
 
   const fetchPreguntas = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`, {
-        withCredentials: true,
-      });
+      const response = await api.get(`/estudiar?tipo=${tipo}&filtro=${filtro}&id=${id}`);
       setPreguntaActual(response.data.pregunta_actual)
       setTotalPreguntas(response.data.total)
       setTestId(response.data.test_id)
@@ -78,9 +65,7 @@ const Estudiar = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         }
       );
       setPreguntaSiguiente(response.data.pregunta_actual)

@@ -13,9 +13,9 @@ const ActivateAccount = () => {
   useEffect(() => {
     const activateAccount = async () => {
       try {
-        const response = await api.post(`activar/${token}/`, {}, { withCredentials: true });
+        const response = await api.post(`activar/${token}/`, {});
 
-        // 🔹 PARCHÉ TEMPORAL: Guardar token para iOS
+        // Guardar token para autenticación por header
         if (response.data.auth_token) {
           localStorage.setItem('auth_token', response.data.auth_token);
         }

@@ -27,9 +27,7 @@ const getApiBaseUrl = () => {
 };
 
 // Crear instancia de axios con interceptor para obtener la URL dinámicamente
-const api = axios.create({
-  withCredentials: true,
-});
+const api = axios.create();
 
 // Interceptor para establecer la baseURL dinámicamente en cada request
 api.interceptors.request.use((config) => {
@@ -37,7 +35,7 @@ api.interceptors.request.use((config) => {
     config.baseURL = getApiBaseUrl();
   }
   
-  // 🔹 PARCHÉ TEMPORAL: Enviar token de autenticación en header para iOS
+  // Enviar token de autenticación en header
   if (typeof window !== 'undefined') {
     const authToken = localStorage.getItem('auth_token');
     if (authToken) {

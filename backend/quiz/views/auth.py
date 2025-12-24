@@ -57,23 +57,14 @@ def activar_cuenta_api(request, token):
     
     login(request, usuario)
 
-    # 🔹 PARCHÉ TEMPORAL: Devolver session_key como token para iOS
+    # Devolver session_key como token para autenticación por header
     session_key = request.session.session_key
     
-    # Establecer cookie de sesión explícitamente con atributos para móviles
     response = Response({
         "message": "Cuenta activada correctamente.",
         "username": usuario.username,
-        "auth_token": session_key  # 🔹 Token temporal para iOS
+        "auth_token": session_key
     }, status=status.HTTP_200_OK)
-    response.set_cookie(
-        "sessionid",
-        session_key,
-        samesite="None",
-        secure=True,
-        httponly=True,
-        max_age=3600
-    )
     return response
 
 @api_view(["GET"])
@@ -87,8 +78,6 @@ def auth_status(request):
 def logout_api(request):
     logout(request)
     response = Response({"message": "Sesión cerrada correctamente."})
-    # 🔹 delete_cookie no acepta secure/httponly, solo path y domain
-    response.delete_cookie("sessionid", path="/")
     return response
 
 
@@ -134,23 +123,14 @@ def login_api(request):
         cache.delete(f"intentos:{device_id}_{cuenta_id}")
         cache.delete(f"bloqueo:{device_id}_{cuenta_id}")
         
-        # 🔹 PARCHÉ TEMPORAL: Devolver session_key como token para iOS
+        # Devolver session_key como token para autenticación por header
         session_key = request.session.session_key
         
-        # Establecer cookie de sesión explícitamente con atributos para móviles
         response = Response({
             "message": "Inicio de sesión exitoso.", 
             "username": user.username,
-            "auth_token": session_key  # 🔹 Token temporal para iOS
+            "auth_token": session_key
         }, status=200)
-        response.set_cookie(
-            "sessionid",
-            session_key,
-            samesite="None",
-            secure=True,
-            httponly=True,
-            max_age=3600
-        )
         return response
     else:
         # Registrar intento fallido por cuenta
@@ -175,13 +155,4 @@ def login_api(request):
 def get_csrf_token(request):
     csrf_token = get_token(request)
     response = JsonResponse({"csrfToken": csrf_token})
-
-    response.set_cookie(
-        "csrftoken",
-        csrf_token,
-        samesite="None",
-        secure=True,
-        httponly=False
-    )
-
     return response

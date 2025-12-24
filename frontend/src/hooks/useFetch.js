@@ -12,11 +12,10 @@ const useFetch = (url, method = "GET", body = null) => {
       try {
         let response;
         if (method === "GET") {
-          response = await api.get(url, { withCredentials: true });
+          response = await api.get(url);
         } else if (method === "POST") {
           response = await api.post(url, body, {
             headers: { "Content-Type": "application/json" },
-            withCredentials: true,
           });
         }
         setData(response.data);

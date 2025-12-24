@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await api.get("auth/status/", { withCredentials: true });
+        const response = await api.get("auth/status/");
         
         setIsAuthenticated(response.data.authenticated);
         setUsername(response.data.username || "");

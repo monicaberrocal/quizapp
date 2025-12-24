@@ -11,20 +11,6 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [csrfToken, setCsrfToken] = useState("");
-
-  useEffect(() => {
-    fetchCsrfToken();
-  }, []);
-
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,12 +26,10 @@ const Login = () => {
         const response = await api.post(`login/`, formData, {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
-          withCredentials: true,
         });
     
-        // 🔹 PARCHÉ TEMPORAL: Guardar token para iOS
+        // Guardar token para autenticación por header
         if (response.data.auth_token) {
           localStorage.setItem('auth_token', response.data.auth_token);
         }

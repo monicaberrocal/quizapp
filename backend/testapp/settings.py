@@ -192,15 +192,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LANGUAGE_CODE = "es"
 
-SESSION_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = True
-CORS_ALLOW_CREDENTIALS = True
+# Autenticación por token en headers, sin cookies
+CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_ALL_ORIGINS = False
-
-
-CSRF_COOKIE_HTTPONLY = False  # 🔹 Permitir acceso desde JavaScript
-CSRF_COOKIE_SAMESITE = "None"  # 🔹 Permitir envío de CSRF en dominios cruzados
-CSRF_COOKIE_SECURE = True  # 🔹 En producción, debe ser True
 
 # quitar
 
