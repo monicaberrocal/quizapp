@@ -223,3 +223,50 @@ CACHES = {
         }
     }
 }
+
+# Logging configuration
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'rich.logging.RichHandler',
+                'rich_tracebacks': True,
+                'show_path': False,
+                'markup': True,
+                'show_time': True,
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.server': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.db.backends': {
+                'handlers': ['console'],
+                'level': 'WARNING',  # Cambiar a INFO o WARNING para ocultar las consultas SQL
+                'propagate': False,
+            },
+            'quiz.middleware': {
+                'handlers': ['console'],
+                'level': 'DEBUG',  # Logs del middleware de debug
+                'propagate': False,
+            },
+        },
+    }
