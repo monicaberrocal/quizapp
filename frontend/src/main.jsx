@@ -9,14 +9,17 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext";
+import { SyncProvider } from "./context/SyncContext";
 
 import $ from "jquery";
 window.$ = window.jQuery = $;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <AuthProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <SyncProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </SyncProvider>
   </AuthProvider>
 );
