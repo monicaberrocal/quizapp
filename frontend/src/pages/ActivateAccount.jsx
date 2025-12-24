@@ -15,9 +15,12 @@ const ActivateAccount = () => {
       try {
         const response = await api.post(`activar/${token}/`, {}, { withCredentials: true });
 
+        // 🔹 PARCHÉ TEMPORAL: Guardar token para iOS
+        if (response.data.auth_token) {
+          localStorage.setItem('auth_token', response.data.auth_token);
+        }
+
         setMessage(response.data.message);
-        setIsAuthenticated(true);
-        setUsername(response.data.username);
         setIsAuthenticated(true);
         setUsername(response.data.username);
 

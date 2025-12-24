@@ -36,6 +36,15 @@ api.interceptors.request.use((config) => {
   if (!config.baseURL) {
     config.baseURL = getApiBaseUrl();
   }
+  
+  // 🔹 PARCHÉ TEMPORAL: Enviar token de autenticación en header para iOS
+  if (typeof window !== 'undefined') {
+    const authToken = localStorage.getItem('auth_token');
+    if (authToken) {
+      config.headers['X-Auth-Token'] = authToken;
+    }
+  }
+  
   return config;
 });
 

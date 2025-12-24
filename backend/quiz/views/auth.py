@@ -57,14 +57,18 @@ def activar_cuenta_api(request, token):
     
     login(request, usuario)
 
+    # 🔹 PARCHÉ TEMPORAL: Devolver session_key como token para iOS
+    session_key = request.session.session_key
+    
     # Establecer cookie de sesión explícitamente con atributos para móviles
     response = Response({
         "message": "Cuenta activada correctamente.",
-        "username": usuario.username
+        "username": usuario.username,
+        "auth_token": session_key  # 🔹 Token temporal para iOS
     }, status=status.HTTP_200_OK)
     response.set_cookie(
         "sessionid",
-        request.session.session_key,
+        session_key,
         samesite="None",
         secure=True,
         httponly=True,
@@ -134,11 +138,18 @@ def login_api(request):
         cache.delete(f"intentos:{device_id}_{cuenta_id}")
         cache.delete(f"bloqueo:{device_id}_{cuenta_id}")
         
+        # 🔹 PARCHÉ TEMPORAL: Devolver session_key como token para iOS
+        session_key = request.session.session_key
+        
         # Establecer cookie de sesión explícitamente con atributos para móviles
-        response = Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        response = Response({
+            "message": "Inicio de sesión exitoso.", 
+            "username": user.username,
+            "auth_token": session_key  # 🔹 Token temporal para iOS
+        }, status=200)
         response.set_cookie(
             "sessionid",
-            request.session.session_key,
+            session_key,
             samesite="None",
             secure=True,
             httponly=True,

@@ -16,6 +16,7 @@ const Logout = () => {
       setUsername("");
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("username");
+      localStorage.removeItem("auth_token");  // 🔹 PARCHÉ TEMPORAL: Limpiar token
 
       // 🔹 Redirigir al usuario a la página de inicio
       navigate("/");

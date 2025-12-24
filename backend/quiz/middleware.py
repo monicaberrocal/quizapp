@@ -1,8 +1,43 @@
 import json
 import time
 import logging
+from django.contrib.sessions.models import Session
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
+
+
+class TokenAuthMiddleware:
+    """
+    🔹 PARCHÉ TEMPORAL: Middleware para autenticación por token en header
+    Soluciona problema de cookies cross-domain en iOS móvil
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        # 🔹 Si no está autenticado pero hay token en header, intentar autenticar
+        if not request.user.is_authenticated:
+            auth_token = request.META.get("HTTP_X_AUTH_TOKEN")
+            if auth_token:
+                try:
+                    # El token es el session_key, cargar la sesión
+                    session = Session.objects.get(session_key=auth_token)
+                    session_data = session.get_decoded()
+                    user_id = session_data.get('_auth_user_id')
+                    if user_id:
+                        user = User.objects.get(pk=user_id)
+                        request.user = user
+                        # También establecer la sesión en la request
+                        request.session = session
+                        logger.info(f"[TOKEN_AUTH] Usuario autenticado por token: {user.username}")
+                except (Session.DoesNotExist, User.DoesNotExist, KeyError):
+                    logger.warning(f"[TOKEN_AUTH] Token inválido: {auth_token[:20]}...")
+        
+        response = self.get_response(request)
+        return response
 
 
 class DebugAccessLogMiddleware:

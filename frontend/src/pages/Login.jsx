@@ -45,6 +45,11 @@ const Login = () => {
           withCredentials: true,
         });
     
+        // 🔹 PARCHÉ TEMPORAL: Guardar token para iOS
+        if (response.data.auth_token) {
+          localStorage.setItem('auth_token', response.data.auth_token);
+        }
+    
         setIsAuthenticated(true);
         setUsername(response.data.username);
     
