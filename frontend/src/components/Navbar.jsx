@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/img/logo_reducido.png";
 import Logout from "./Logout";
+import ModeToggle from "./ModeToggle";
 
 const Navbar = () => {
   const { isAuthenticated, username } = useContext(AuthContext);
@@ -33,7 +34,8 @@ const Navbar = () => {
               {/* <Link className="nav-item nav-link" to="/temas">Temas</Link> */}
             </div>
           )}
-          <div className="navbar-nav ms-auto">
+          <div className="navbar-nav ms-auto d-flex align-items-center gap-3">
+            {isAuthenticated && <ModeToggle />}
             {isAuthenticated ? (
               <>
                 <span className="navbar-text">Hola, {username}!</span>

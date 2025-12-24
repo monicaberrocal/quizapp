@@ -5,6 +5,11 @@ const getApiBaseUrl = () => {
   if (typeof window !== 'undefined' && window.location) {
     const hostname = window.location.hostname;
     
+    // Si es desarrollo local (localhost o 127.0.0.1)
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8000/api/';
+    }
+    
     // Si es staging
     if (hostname.includes('staging') || hostname.includes('react-staging')) {
       return 'https://quizapp-staging.up.railway.app/api/';
@@ -22,7 +27,7 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_BASE_URL;
   }
   
-  // Por defecto, producción (para desarrollo local)
+  // Por defecto, producción
   return 'https://quizapp-production-6f2c.up.railway.app/api/';
 };
 

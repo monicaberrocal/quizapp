@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import InstallPWA from "../components/InstallPWA";
 import logo from "../assets/img/logo_completo.png";
 
 const Homepage = () => {
@@ -8,6 +9,7 @@ const Homepage = () => {
 
   return (
     <div className="container mt-5">
+      <InstallPWA />
       <div className="row justify-content-center">
         <div className="col-12 text-center mt-3">
           <img className="img-fluid mb-4" src={logo} alt="Logo" />
