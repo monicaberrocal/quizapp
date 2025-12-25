@@ -30,7 +30,10 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [
                        s.strip() for s in v.split(',')])
-CORS_ALLOWED_ORIGINS = [config('CORS_ALLOWED_ORIGINS')]
+CORS_ALLOWED_ORIGINS = [config('CORS_ALLOWED_ORIGINS')] if config('CORS_ALLOWED_ORIGINS', default='') else []
+# En modo DEBUG, agregar localhost para desarrollo local
+if DEBUG:
+    CORS_ALLOWED_ORIGINS.extend(['http://localhost:5173', 'http://127.0.0.1:5173'])
 
 
 LOGIN_REDIRECT_URL = '/'
@@ -73,6 +76,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Debe estar lo más arriba posible
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,8 +85,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'testapp.urls'
