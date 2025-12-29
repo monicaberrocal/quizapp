@@ -14,7 +14,6 @@ const AsignaturaDetalle = () => {
   const [editando, setEditando] = useState(false);
   const [nuevoTitulo, setNuevoTitulo] = useState("");
   const [nuevoTema, setNuevoTema] = useState(""); // Estado para el nuevo tema
-  const [csrfToken, setCsrfToken] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [importFormat, setImportFormat] = useState("json");
@@ -30,7 +29,6 @@ const AsignaturaDetalle = () => {
 
   useEffect(() => {
     fetchAsignaturaDetalle();
-    fetchCsrfToken();
   }, [asignaturaId]);
 
   const fetchAsignaturaDetalle = async () => {
@@ -48,15 +46,6 @@ const AsignaturaDetalle = () => {
     }
   };
 
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
-
   const handleActualizarTitulo = async () => {
     setEditing(true)
     try {
@@ -66,7 +55,6 @@ const AsignaturaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
         }
@@ -99,9 +87,6 @@ const AsignaturaDetalle = () => {
 
     try {
       await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
 
@@ -122,9 +107,6 @@ const AsignaturaDetalle = () => {
     setDeleting(true)
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
       setTemas((prevTemas) =>
@@ -152,7 +134,6 @@ const AsignaturaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
         }
@@ -181,9 +162,6 @@ const AsignaturaDetalle = () => {
         `/asignaturas/${asignaturaId}/importar_tema/?formato=${importFormat}`,
         formData,
         {
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
           withCredentials: true,
         }
       );
@@ -203,10 +181,6 @@ const AsignaturaDetalle = () => {
       const response = await api.get(
         `/asignaturas/${asignaturaId}/exportar/?formato=${exportFormat}`,
         {
-          headers: {
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "multipart/form-data",
-          },
           withCredentials: true,
           responseType: "blob",
         }

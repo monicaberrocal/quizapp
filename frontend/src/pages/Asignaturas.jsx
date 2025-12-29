@@ -9,7 +9,6 @@ const Temas = () => {
   const [nombreAsignatura, setNombreAsignatura] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [csrfToken, setCsrfToken] = useState("");
   const [creating, setCreating] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
 
@@ -20,7 +19,6 @@ const Temas = () => {
 
   useEffect(() => {
     fetchTemas();
-    fetchCsrfToken();
   }, []);
 
   const fetchTemas = async () => {
@@ -37,15 +35,6 @@ const Temas = () => {
     }
   };
 
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
-
   const handleCreateAsignatura = async (e) => {
     e.preventDefault();
     setError("");
@@ -58,7 +47,6 @@ const Temas = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
         },
@@ -94,9 +82,6 @@ const Temas = () => {
 
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
 
@@ -125,9 +110,6 @@ const Temas = () => {
 
     try {
       await api.delete(`/asignaturas/${asignaturaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
 

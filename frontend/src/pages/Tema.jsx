@@ -25,7 +25,6 @@ const TemaDetalle = () => {
     ayuda: "",
     respuestas: [{ texto: "" }, { texto: "" }, { texto: "" }, { texto: "" }],
   });
-  const [csrfToken, setCsrfToken] = useState("");
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
@@ -52,7 +51,6 @@ const TemaDetalle = () => {
 
   useEffect(() => {
     fetchTema();
-    fetchCsrfToken();
   }, [temaId]);
 
   const fetchTema = async () => {
@@ -70,15 +68,6 @@ const TemaDetalle = () => {
     }
   };
 
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await api.get("/csrf/", { withCredentials: true });
-      setCsrfToken(response.data.csrfToken);
-    } catch (error) {
-      console.error("❌ Error obteniendo CSRF Token", error);
-    }
-  };
-
   const handleActualizarTitulo = async () => {
     setEditing(true);
     try {
@@ -88,7 +77,6 @@ const TemaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
         },
@@ -128,7 +116,6 @@ const TemaDetalle = () => {
       const response = await api.post("/preguntas/crear/", nuevaPreguntaData, {
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
         },
         withCredentials: true,
       });
@@ -204,9 +191,6 @@ const TemaDetalle = () => {
 
     try {
       await api.delete(`/temas/${temaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
       // 📌 Asegurar que `asignatura_id` está definido antes de redirigir
@@ -230,9 +214,6 @@ const TemaDetalle = () => {
 
     try {
       await api.delete(`/preguntas/${preguntaAEliminar.id}/`, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
 
@@ -265,9 +246,6 @@ const TemaDetalle = () => {
       const response = await api.get(
         `/temas/${temaId}/descargar/?formato=${exportFormat}`,
         {
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
           withCredentials: true,
           responseType: "blob", // 📌 Importante: Recibir la respuesta como un archivo
         },
@@ -378,9 +356,6 @@ const TemaDetalle = () => {
 
     try {
       const response = await api.post(`/temas/${temaId}/generar/`, formData, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
         withCredentials: true,
       });
       const data = response.data;
@@ -416,9 +391,6 @@ const TemaDetalle = () => {
         `/temas/${temaId}/importar/?formato=${importFormat}`,
         formData,
         {
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
           withCredentials: true,
         },
       );
@@ -550,7 +522,6 @@ const TemaDetalle = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
         },
