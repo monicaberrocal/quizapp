@@ -143,9 +143,15 @@ def get_csrf_token(request):
     csrf_token = get_token(request)
     response = JsonResponse({"csrfToken": csrf_token})
 
+    # Establecer cookie CSRF con atributos necesarios para Safari y Chrome iOS
     response.set_cookie(
         "csrftoken",
-        csrf_token
+        csrf_token,
+        samesite="None",  # Requerido para cookies cross-site
+        secure=True,  # Requerido cuando SameSite=None
+        httponly=False,  # Permitir acceso desde JavaScript
+        path="/",  # Disponible en toda la aplicación
+        max_age=31449600,  # 1 año (opcional, pero ayuda con persistencia)
     )
 
     return response
