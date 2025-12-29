@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api";
+import api, { setAuthToken } from "../api";
 import { AuthContext } from "../context/AuthContext";
 
 const ActivateAccount = () => {
@@ -13,13 +13,18 @@ const ActivateAccount = () => {
   useEffect(() => {
     const activateAccount = async () => {
       try {
-        const response = await api.post(`activar/${token}/`, {}, { withCredentials: true });
+        const response = await api.post(`activar/${token}/`, {});
+
+        // Guardar token de autenticación si viene en la respuesta
+        if (response.data.token) {
+          setAuthToken(response.data.token);
+        }
 
         setMessage(response.data.message);
         setIsAuthenticated(true);
         setUsername(response.data.username);
-        setIsAuthenticated(true);
-        setUsername(response.data.username);
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("username", response.data.username);
 
         setTimeout(() => navigate("/"), 3000);
 

@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 
 # Local imports (models and serializers)
 from ..models import CodigoActivacion
@@ -55,11 +56,13 @@ def activar_cuenta_api(request, token):
     usuario.save()
     activacion.delete()
     
-    login(request, usuario)
-
+    # Generar o obtener token para el usuario
+    token, created = Token.objects.get_or_create(user=usuario)
+    
     return Response({
         "message": "Cuenta activada correctamente.",
-        "username": usuario.username
+        "username": usuario.username,
+        "token": token.key
     }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
@@ -69,9 +72,15 @@ def auth_status(request):
         "username": request.user.username if request.user.is_authenticated else None
     })
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def logout_api(request):
+    # Eliminar token si existe (Token Authentication)
+    if hasattr(request.user, 'auth_token'):
+        request.user.auth_token.delete()
+    
+    # También hacer logout de sesión si existe (Session Authentication)
     logout(request)
+    
     response = Response({"message": "Sesión cerrada correctamente."})
     response.delete_cookie("sessionid")
     return response
@@ -114,43 +123,23 @@ def login_api(request):
     user = authenticate(username=username, password=password)
 
     if user is not None:
-        login(request, user)
         # Reiniciar contador de intentos si login exitoso
         cache.delete(f"intentos:{device_id}_{cuenta_id}")
         cache.delete(f"bloqueo:{device_id}_{cuenta_id}")
         
-        # Crear respuesta y establecer cookie de sesión manualmente con atributos correctos para Safari iOS
-        response = Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        # Generar o obtener token para el usuario (Token Authentication)
+        token, created = Token.objects.get_or_create(user=user)
         
-        # Obtener el valor de la cookie de sesión que Django estableció
-        session_key = request.session.session_key
+        # También hacer login de sesión para compatibilidad (Session Authentication)
+        login(request, user)
         
-        # Forzar guardado de sesión para asegurar que session_key existe
-        request.session.save()
-        session_key = request.session.session_key
+        print(f"✅ Login exitoso - Token generado: {token.key[:20]}...")
         
-        # Establecer cookie de sesión manualmente con atributos necesarios para Safari iOS
-        if session_key:
-            # Obtener el dominio desde la request
-            domain = None
-            # No establecer dominio explícitamente para que funcione en todos los subdominios
-            # Safari iOS puede rechazar cookies con dominio explícito
-            
-            response.set_cookie(
-                "sessionid",
-                session_key,
-                samesite="None",  # Requerido para cookies cross-site
-                secure=True,  # Requerido cuando SameSite=None
-                httponly=True,  # Seguridad: no accesible desde JavaScript
-                path="/",  # Disponible en toda la aplicación
-                max_age=3600,  # 1 hora (SESSION_COOKIE_AGE)
-                domain=domain,  # None = solo el dominio actual
-            )
-            print(f"✅ Cookie sessionid establecida: {session_key[:20]}...")
-        else:
-            print("❌ ERROR: session_key es None después de login")
-        
-        return response
+        return Response({
+            "message": "Inicio de sesión exitoso.",
+            "username": user.username,
+            "token": token.key
+        }, status=200)
     else:
         # Registrar intento fallido por cuenta
         intentos = cache.get(f"intentos:{device_id}_{cuenta_id}", 0) + 1

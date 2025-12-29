@@ -11,9 +11,21 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Verificar si hay token antes de hacer la petición
+      const token = localStorage.getItem("auth_token");
+      
+      if (!token) {
+        console.log("🔍 No hay token, usuario no autenticado");
+        setIsAuthenticated(false);
+        setUsername("");
+        localStorage.setItem("isAuthenticated", "false");
+        localStorage.setItem("username", "");
+        return;
+      }
+
       try {
         console.log("🔍 Verificando estado de autenticación...");
-        const response = await api.get("auth/status/", { withCredentials: true });
+        const response = await api.get("auth/status/");
         console.log("✅ Respuesta auth/status:", response.data);
         
         setIsAuthenticated(response.data.authenticated);
@@ -23,6 +35,8 @@ export const AuthProvider = ({ children }) => {
         
         if (!response.data.authenticated) {
           console.warn("⚠️ Usuario no autenticado según el servidor");
+          // Limpiar token si no está autenticado
+          localStorage.removeItem("auth_token");
         }
       } catch (error) {
         console.error("❌ Error verificando autenticación:", error);
@@ -32,6 +46,8 @@ export const AuthProvider = ({ children }) => {
         setUsername("");
         localStorage.setItem("isAuthenticated", "false");
         localStorage.setItem("username", "");
+        // Limpiar token si hay error
+        localStorage.removeItem("auth_token");
       }
     };
 

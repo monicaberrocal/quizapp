@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'rest_framework',
+    'rest_framework.authtoken',  # Token Authentication
     'corsheaders'
 ]
 
@@ -63,8 +64,8 @@ else:
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',  # Primero Token (principal)
+        'rest_framework.authentication.SessionAuthentication',  # Mantener Session como fallback
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         rest_authentication
@@ -111,19 +112,21 @@ WSGI_APPLICATION = 'testapp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config('DB_NAME'),
-#         'USER': config('DB_USER'),
-#         'PASSWORD': config('DB_PASSWORD'),
-#         'HOST': config('DB_HOST'),
-#         'PORT': config('DB_PORT'),
-#     }
-# }
-
+# Configurar base de datos con opciones mejoradas para manejar problemas temporales de conectividad
+db_config = dj_database_url.config(default=config('DATABASE_URL'))
+if db_config and isinstance(db_config, dict):
+    # Agregar opciones de conexión para mejorar la robustez
+    if 'OPTIONS' not in db_config:
+        db_config['OPTIONS'] = {}
+    db_config['OPTIONS'].update({
+        'connect_timeout': 10,  # Timeout de conexión en segundos
+    })
+    # Mantener conexiones persistentes para reducir latencia
+    if 'CONN_MAX_AGE' not in db_config:
+        db_config['CONN_MAX_AGE'] = 600  # Mantener conexión por 10 minutos
+    
 DATABASES = {
-    'default': dj_database_url.config(default=config('DATABASE_URL'))
+    'default': db_config
 }
 
 

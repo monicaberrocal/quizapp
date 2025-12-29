@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
+import api, { setAuthToken } from "../api";
 import { AuthContext } from "../context/AuthContext";
 import AlertMessage from "../components/AlertMessage";
 
@@ -24,8 +24,14 @@ const Login = () => {
 
     try {
         console.log("🔐 Intentando iniciar sesión...");
-        const response = await api.post(`login/`, formData, { withCredentials: true });
+        const response = await api.post(`login/`, formData);
         console.log("✅ Login exitoso:", response.data);
+    
+        // Guardar token de autenticación
+        if (response.data.token) {
+          setAuthToken(response.data.token);
+          console.log("✅ Token guardado en localStorage");
+        }
     
         setIsAuthenticated(true);
         setUsername(response.data.username);
