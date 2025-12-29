@@ -118,7 +118,26 @@ def login_api(request):
         # Reiniciar contador de intentos si login exitoso
         cache.delete(f"intentos:{device_id}_{cuenta_id}")
         cache.delete(f"bloqueo:{device_id}_{cuenta_id}")
-        return Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        
+        # Crear respuesta y establecer cookie de sesión manualmente con atributos correctos para Safari iOS
+        response = Response({"message": "Inicio de sesión exitoso.", "username": user.username}, status=200)
+        
+        # Obtener el valor de la cookie de sesión que Django estableció
+        session_key = request.session.session_key
+        
+        # Establecer cookie de sesión manualmente con atributos necesarios para Safari iOS
+        if session_key:
+            response.set_cookie(
+                "sessionid",
+                session_key,
+                samesite="None",  # Requerido para cookies cross-site
+                secure=True,  # Requerido cuando SameSite=None
+                httponly=True,  # Seguridad: no accesible desde JavaScript
+                path="/",  # Disponible en toda la aplicación
+                max_age=3600,  # 1 hora (SESSION_COOKIE_AGE)
+            )
+        
+        return response
     else:
         # Registrar intento fallido por cuenta
         intentos = cache.get(f"intentos:{device_id}_{cuenta_id}", 0) + 1
