@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || "https://quizapp-production-6f2c.up.railway.app/api/"),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || "https://quizapp-production-d9e0.up.railway.app/api/"),
       'import.meta.env.NOMBRE_APP': JSON.stringify("QuizApp"),
     },
   };
