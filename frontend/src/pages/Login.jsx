@@ -23,20 +23,29 @@ const Login = () => {
     setLoading(true);  
 
     try {
+        console.log("🔐 Intentando iniciar sesión...");
         const response = await api.post(`login/`, formData, { withCredentials: true });
+        console.log("✅ Login exitoso:", response.data);
     
         setIsAuthenticated(true);
         setUsername(response.data.username);
-        setIsAuthenticated(true);
-        setUsername(response.data.username);
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("username", response.data.username);
     
         navigate("/");
       } catch (error) {
+        console.error("❌ Error en login:", error);
+        console.error("   Status:", error.response?.status);
+        console.error("   Data:", error.response?.data);
+        console.error("   Message:", error.message);
+        
         if (error.response) {
           if (error.response.status === 401) {
             setMessage("Nombre de usuario o contraseña incorrectos.");
           } else if (error.response.status === 400) {
             setMessage("Por favor, completa todos los campos.");
+          } else if (error.response.status === 403) {
+            setMessage(error.response.data.error || "Error de autenticación. Por favor, intenta de nuevo.");
           } else {
             setMessage(error.response.data.error || "Error en el inicio de sesión.");
           }
