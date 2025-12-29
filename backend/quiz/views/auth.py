@@ -125,8 +125,17 @@ def login_api(request):
         # Obtener el valor de la cookie de sesión que Django estableció
         session_key = request.session.session_key
         
+        # Forzar guardado de sesión para asegurar que session_key existe
+        request.session.save()
+        session_key = request.session.session_key
+        
         # Establecer cookie de sesión manualmente con atributos necesarios para Safari iOS
         if session_key:
+            # Obtener el dominio desde la request
+            domain = None
+            # No establecer dominio explícitamente para que funcione en todos los subdominios
+            # Safari iOS puede rechazar cookies con dominio explícito
+            
             response.set_cookie(
                 "sessionid",
                 session_key,
@@ -135,7 +144,11 @@ def login_api(request):
                 httponly=True,  # Seguridad: no accesible desde JavaScript
                 path="/",  # Disponible en toda la aplicación
                 max_age=3600,  # 1 hora (SESSION_COOKIE_AGE)
+                domain=domain,  # None = solo el dominio actual
             )
+            print(f"✅ Cookie sessionid establecida: {session_key[:20]}...")
+        else:
+            print("❌ ERROR: session_key es None después de login")
         
         return response
     else:
